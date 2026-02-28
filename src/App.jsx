@@ -51,8 +51,8 @@ function StorePage() {
           </div>
         ) : sections.length === 0 ? (
           <div className="text-center py-32">
-            <span className="text-5xl block mb-4">🏪</span>
-            <p className="text-gray-500 font-pixel text-xs">Store coming soon</p>
+            <span className="text-5xl block mb-4">🔧</span>
+            <p className="text-gray-500 font-pixel text-xs">Scheduled maintenance is going on, will open shortly</p>
           </div>
         ) : (
           sections.map((section) => (
