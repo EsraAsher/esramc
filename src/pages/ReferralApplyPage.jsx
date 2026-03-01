@@ -169,8 +169,8 @@ const ReferralApplyPage = () => {
             placeholder="e.g. 123456789012345678"
             className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-red-500/50 transition-colors"
           />
-          <p className="text-gray-600 text-xs mt-1">
-            Right-click your name in Discord → Copy User ID (enable Developer Mode in settings)
+          <p className="text-red-500 text-xs mt-1">
+            Go to any server's channel → tap on your profile → copy your USER ID
           </p>
         </div>
 
