@@ -1,25 +1,31 @@
 import { Router } from 'express';
 import StoreCode from '../models/StoreCode.js';
+import { safeCompare, validateHmacRequest } from '../middleware/hmacAuth.js';
 
 const router = Router();
+
+function isPluginAuthorized(req, serverSecret) {
+  const hmac = validateHmacRequest(req, serverSecret);
+  if (hmac.present) return hmac.ok;
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+
+  const token = authHeader.split(' ')[1];
+  return safeCompare(token, serverSecret);
+}
 
 // POST /api/storecode/generate
 // Called by Minecraft plugin only
 router.post('/generate', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
     const serverSecret = process.env.SERVER_SECRET;
 
     if (!serverSecret) {
       return res.status(500).json({ success: false });
     }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false });
-    }
-
-    const token = authHeader.split(' ')[1];
-    if (token !== serverSecret) {
+    if (!isPluginAuthorized(req, serverSecret)) {
       return res.status(401).json({ success: false });
     }
 

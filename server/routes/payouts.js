@@ -5,10 +5,12 @@ import Payout from '../models/Payout.js';
 import PayoutRequest from '../models/PayoutRequest.js';
 import { getSettings } from '../models/Settings.js';
 import authMiddleware from '../middleware/auth.js';
+import requireRole from '../middleware/requireRole.js';
 import { sendMail, payoutProcessedHTML, payoutRejectedHTML } from '../utils/mailer.js';
 import { sendDiscordEvent } from '../utils/discord.js';
 
 const router = Router();
+const requireSuperadmin = requireRole('superadmin');
 
 // ═══════════════════════════════════════════════════════════
 // ADMIN — List creators eligible for payout (dynamic threshold)
@@ -59,7 +61,7 @@ router.get('/history', authMiddleware, async (req, res) => {
 // POST /api/payouts/process
 // Body: { partnerId, amount, note? }
 // ═══════════════════════════════════════════════════════════
-router.post('/process', authMiddleware, async (req, res) => {
+router.post('/process', authMiddleware, requireSuperadmin, async (req, res) => {
   try {
     const { partnerId, amount, note } = req.body;
 
@@ -188,7 +190,7 @@ router.get('/requests', authMiddleware, async (req, res) => {
 // ADMIN — Mark payout request as "processing"
 // PATCH /api/payouts/requests/:id/processing
 // ═══════════════════════════════════════════════════════════
-router.patch('/requests/:id/processing', authMiddleware, async (req, res) => {
+router.patch('/requests/:id/processing', authMiddleware, requireSuperadmin, async (req, res) => {
   try {
     const pr = await PayoutRequest.findById(req.params.id);
     if (!pr) return res.status(404).json({ message: 'Payout request not found.' });
@@ -212,7 +214,7 @@ router.patch('/requests/:id/processing', authMiddleware, async (req, res) => {
 // PATCH /api/payouts/requests/:id/complete
 // Body: { transactionId }
 // ═══════════════════════════════════════════════════════════
-router.patch('/requests/:id/complete', authMiddleware, async (req, res) => {
+router.patch('/requests/:id/complete', authMiddleware, requireSuperadmin, async (req, res) => {
   try {
     const { transactionId } = req.body;
     if (!transactionId?.trim()) {
@@ -308,7 +310,7 @@ router.patch('/requests/:id/complete', authMiddleware, async (req, res) => {
 // PATCH /api/payouts/requests/:id/reject
 // Body: { reason? }
 // ═══════════════════════════════════════════════════════════
-router.patch('/requests/:id/reject', authMiddleware, async (req, res) => {
+router.patch('/requests/:id/reject', authMiddleware, requireSuperadmin, async (req, res) => {
   try {
     const pr = await PayoutRequest.findById(req.params.id);
     if (!pr) return res.status(404).json({ message: 'Payout request not found.' });

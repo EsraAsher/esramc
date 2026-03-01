@@ -11,15 +11,32 @@ import { getSettings } from '../models/Settings.js';
 import { sendMail, payoutProcessedHTML, payoutRejectedHTML, referralApprovedHTML, referralRejectedHTML } from '../utils/mailer.js';
 import { sendDiscordEvent } from '../utils/discord.js';
 import { generateUniqueCode } from '../utils/referralCode.js';
+import { safeCompare, validateHmacRequest } from '../middleware/hmacAuth.js';
 
 const router = Router();
 
 // ─── Bot auth middleware ──────────────────────────────────
 function botAuth(req, res, next) {
-  const secret = req.headers['x-bot-secret'];
-  if (!secret || secret !== process.env.BOT_INTERNAL_SECRET) {
+  const sharedSecret = process.env.BOT_INTERNAL_SECRET;
+  if (!sharedSecret) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
+
+  // Preferred: HMAC-signed request (timestamp + replay protection)
+  const hmac = validateHmacRequest(req, sharedSecret);
+  if (hmac.present) {
+    if (!hmac.ok) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    return next();
+  }
+
+  // Backward-compatible fallback: static shared secret header
+  const legacySecret = req.headers['x-bot-secret'];
+  if (!legacySecret || !safeCompare(legacySecret, sharedSecret)) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
   next();
 }
 

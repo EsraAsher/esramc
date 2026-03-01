@@ -30,7 +30,7 @@ function getDiscordConfig() {
 }
 
 // ─── 1. Redirect to Discord ──────────────────────────────
-router.get('/auth/discord', (req, res) => {
+function redirectToDiscordOAuth(req, res) {
   try {
     const { clientId, redirectUri } = getDiscordConfig();
     const params = new URLSearchParams({
@@ -44,7 +44,10 @@ router.get('/auth/discord', (req, res) => {
     console.error('[Creator Auth] Discord redirect error:', err.message);
     res.status(500).json({ message: 'Discord OAuth not configured' });
   }
-});
+}
+
+router.get('/login', redirectToDiscordOAuth);
+router.get('/auth/discord', redirectToDiscordOAuth);
 
 // ─── 2. Discord OAuth Callback ────────────────────────────
 router.get('/auth/discord/callback', async (req, res) => {

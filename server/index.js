@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import adminRoutes from './routes/admin.js';
 import collectionRoutes from './routes/collections.js';
@@ -22,9 +24,51 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.disable('x-powered-by');
+
 // Trust Render's (and other reverse proxies') X-Forwarded-For header
 // Required for express-rate-limit to correctly identify client IPs
 app.set('trust proxy', 1);
+
+// ─── Security Headers ───────────────────────────────────
+app.use(helmet({
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https:'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'", 'https:', 'wss:'],
+      fontSrc: ["'self'", 'https:', 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"],
+      upgradeInsecureRequests: null,
+    },
+  },
+}));
+
+// ─── Rate Limiting ──────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests. Please try again later.' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many login attempts. Please try again later.' },
+});
 
 // ─── CORS ─────────────────────────────────────────────────
 // Allow local dev + any Vercel deployment + custom FRONTEND_URL
@@ -50,11 +94,18 @@ app.use(cors({
   credentials: true,
 }));
 
+app.use('/api', globalLimiter);
+app.use(['/api/admin/login', '/api/creator/login'], authLimiter);
+
 // ⚠️ Webhook route MUST use raw body — define BEFORE express.json()
 // Support both plural and singular paths to avoid dashboard URL mismatch issues.
 app.use(['/api/payments/webhook', '/api/payment/webhook'], express.raw({ type: 'application/json' }));
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf?.toString('utf8') || '';
+  },
+}));
 
 // Routes
 app.use('/api/admin', adminRoutes);

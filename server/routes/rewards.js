@@ -1,7 +1,19 @@
 import { Router } from 'express';
 import Order from '../models/Order.js';
+import { safeCompare, validateHmacRequest } from '../middleware/hmacAuth.js';
 
 const router = Router();
+
+function isPluginAuthorized(req, serverSecret) {
+  const hmac = validateHmacRequest(req, serverSecret);
+  if (hmac.present) return hmac.ok;
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+
+  const token = authHeader.split(' ')[1];
+  return safeCompare(token, serverSecret);
+}
 
 // GET /api/rewards/pending?username=<playerName>
 // Called by Minecraft plugin to fetch pending paid rewards for a player.
@@ -36,19 +48,13 @@ router.get('/pending', async (req, res) => {
 // Called by Minecraft plugin after successful command execution.
 router.post('/mark-delivered', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
     const serverSecret = process.env.SERVER_SECRET;
 
     if (!serverSecret) {
       return res.status(500).json({ success: false });
     }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false });
-    }
-
-    const token = authHeader.split(' ')[1];
-    if (token !== serverSecret) {
+    if (!isPluginAuthorized(req, serverSecret)) {
       return res.status(401).json({ success: false });
     }
 

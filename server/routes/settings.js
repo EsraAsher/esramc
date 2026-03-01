@@ -8,8 +8,10 @@
 import { Router } from 'express';
 import Settings, { getSettings } from '../models/Settings.js';
 import authMiddleware from '../middleware/auth.js';
+import requireRole from '../middleware/requireRole.js';
 
 const router = Router();
+const requireSuperadmin = requireRole('superadmin');
 
 // ─── Public (used by creator dashboard) ──────────────────
 router.get('/public', async (req, res) => {
@@ -36,7 +38,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // ─── Admin: update settings ──────────────────────────────
-router.patch('/', authMiddleware, async (req, res) => {
+router.patch('/', authMiddleware, requireSuperadmin, async (req, res) => {
   try {
     const { globalPayoutThreshold } = req.body;
     const updates = {};

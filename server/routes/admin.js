@@ -2,8 +2,29 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 import authMiddleware from '../middleware/auth.js';
+import requireRole from '../middleware/requireRole.js';
 
 const router = Router();
+
+const requireSuperadmin = requireRole('superadmin');
+
+function setupAccessMiddleware(req, res, next) {
+  const { setupKey } = req.body || {};
+
+  if (setupKey !== undefined) {
+    if (setupKey !== process.env.ADMIN_SETUP_KEY) {
+      return res.status(403).json({ message: 'Invalid setup key' });
+    }
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(403).json({ message: 'Invalid setup key' });
+  }
+
+  return authMiddleware(req, res, () => requireSuperadmin(req, res, next));
+}
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
@@ -49,13 +70,9 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 // POST /api/admin/setup - initial admin creation (requires setup key)
-router.post('/setup', async (req, res) => {
+router.post('/setup', setupAccessMiddleware, async (req, res) => {
   try {
-    const { username, password, setupKey } = req.body;
-    
-    if (setupKey !== process.env.ADMIN_SETUP_KEY) {
-      return res.status(403).json({ message: 'Invalid setup key' });
-    }
+    const { username, password } = req.body;
 
     const existingAdmin = await Admin.findOne({ username });
     if (existingAdmin) {
