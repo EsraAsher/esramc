@@ -16,6 +16,7 @@ import CollectionPage from './pages/CollectionPage';
 import VotePage from './pages/VotePage';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminCallback from './pages/admin/AdminCallback';
 import TermsPage from './pages/TermsPage';
 import ReferralApplyPage from './pages/ReferralApplyPage';
 import CreatorLoginPage from './pages/CreatorLoginPage';
@@ -118,6 +119,7 @@ function App() {
                 <Route path="/creator/dashboard" element={<CreatorDashboardPage />} />
 
                 {/* Hidden admin route */}
+                <Route path="/admin/callback" element={<AdminCallback />} />
                 <Route
                   path="/adminishere"
                   element={

@@ -130,15 +130,18 @@ const seedData = async () => {
 
     console.log('Products seeded');
 
-    // Create default admin if not exists
-    const existingAdmin = await Admin.findOne({ username: 'admin' });
-    if (!existingAdmin) {
-      await Admin.create({
-        username: 'admin',
-        password: 'RedLine@Admin2026',
-        role: 'superadmin',
-      });
-      console.log('Default admin created (username: admin, password: RedLine@Admin2026)');
+    // Optional: seed Discord-native superadmin if env var is provided
+    const seedDiscordId = process.env.SEED_SUPERADMIN_DISCORD_ID?.trim();
+    if (seedDiscordId) {
+      const existingAdmin = await Admin.findOne({ discordId: seedDiscordId });
+      if (!existingAdmin) {
+        await Admin.create({
+          discordId: seedDiscordId,
+          displayName: process.env.SEED_SUPERADMIN_DISPLAY_NAME?.trim() || 'Seed Superadmin',
+          role: 'superadmin',
+        });
+        console.log(`Discord superadmin seeded for ${seedDiscordId}`);
+      }
     }
 
     console.log('Seed completed successfully!');

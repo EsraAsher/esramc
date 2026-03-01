@@ -1,29 +1,6 @@
-import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { adminLogin } from '../../api';
+import { getAdminDiscordAuthUrl } from '../../api';
 
 const AdminLogin = () => {
-  const { login } = useAuth();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const data = await adminLogin(username, password);
-      login(data.token, data.admin);
-    } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <main className="relative z-10 min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -36,48 +13,24 @@ const AdminLogin = () => {
             <h1 className="font-pixel text-xl text-red-400 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
               ADMIN ACCESS
             </h1>
-            <p className="text-gray-500 text-sm mt-2">Authorized personnel only</p>
+            <p className="text-gray-500 text-sm mt-2">Only allowlisted Discord admins can sign in</p>
           </div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg p-3 mb-6 text-center">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-gray-400 text-xs font-pixel mb-2">USERNAME</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500/50 transition-colors"
-                placeholder="Enter admin username"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-400 text-xs font-pixel mb-2">PASSWORD</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500/50 transition-colors"
-                placeholder="Enter password"
-                required
-              />
+          <div className="space-y-5">
+            <div className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs rounded-lg p-3 text-center">
+              Password login is disabled.
             </div>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 font-pixel text-sm rounded-lg transition-all duration-300 bg-red-600 text-white hover:bg-red-500 shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:shadow-[0_0_30px_rgba(255,0,0,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              onClick={() => {
+                window.location.href = getAdminDiscordAuthUrl();
+              }}
+              className="w-full py-3 font-pixel text-xs rounded-lg transition-all duration-300 bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30"
             >
-              {loading ? 'AUTHENTICATING...' : 'SIGN IN'}
+              SIGN IN WITH DISCORD
             </button>
-          </form>
+          </div>
         </div>
       </div>
     </main>

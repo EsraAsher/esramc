@@ -39,6 +39,15 @@ services:
         sync: false
       - key: DISCORD_REDIRECT_URI
         sync: false
+      # ── Discord OAuth (Admin login - allowlisted) ──
+      - key: DISCORD_ADMIN_CLIENT_ID
+        sync: false
+      - key: DISCORD_ADMIN_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_ADMIN_REDIRECT_URI
+        sync: false
+      - key: DISCORD_ADMIN_IDS
+        sync: false
       # ── Discord Webhooks ──
       - key: DISCORD_WEBHOOK_PUBLIC_PURCHASES
         sync: false

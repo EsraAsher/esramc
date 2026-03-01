@@ -259,7 +259,7 @@ const AdminReferrals = () => {
                   {ref.reviewedBy && (
                     <div>
                       <span className="text-gray-500">Reviewed by:</span>{' '}
-                      <span className="text-gray-300">{ref.reviewedBy?.username || '—'}</span>
+                      <span className="text-gray-300">{ref.reviewedBy?.displayName || ref.reviewedBy?.discordId || ref.reviewedBy?.username || '—'}</span>
                     </div>
                   )}
                   {ref.reviewedAt && (

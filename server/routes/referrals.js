@@ -10,6 +10,10 @@ import { generateUniqueCode } from '../utils/referralCode.js';
 
 const router = Router();
 
+function getAdminActorName(admin) {
+  return admin?.displayName || admin?.discordId || admin?.username || 'admin';
+}
+
 // ─── Rate limiter for applications (S4) ─────────────────
 const applyLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -114,7 +118,7 @@ router.get('/admin/applications', authMiddleware, async (req, res) => {
   try {
     const applications = await ReferralApplication.find()
       .sort({ createdAt: -1 })
-      .populate('reviewedBy', 'username');
+      .populate('reviewedBy', 'username displayName discordId');
 
     res.json(applications);
   } catch (err) {
@@ -210,7 +214,7 @@ router.patch('/admin/:id/approve', authMiddleware, async (req, res) => {
       referralCode: code,
       discountPercent: partner.discountPercent,
       commissionPercent: partner.commissionPercent,
-      reviewedBy: req.admin.username,
+      reviewedBy: getAdminActorName(req.admin),
     }).catch(() => {});
 
     // ── Notify Discord bot of approval ──────────────────────
@@ -271,7 +275,7 @@ router.patch('/admin/:id/reject', authMiddleware, async (req, res) => {
 
     sendDiscordEvent('referral_rejected', {
       creatorName: application.creatorName,
-      reviewedBy: req.admin.username,
+      reviewedBy: getAdminActorName(req.admin),
     }).catch(() => {});
 
     res.json({ message: 'Application rejected.', application });
@@ -373,7 +377,7 @@ router.patch('/admin/partner/:id/adjust-commission', authMiddleware, async (req,
       adjustedBy: req.admin._id,
     });
 
-    console.log(`[Referrals] Commission adjusted for ${partner.creatorName}: ₹${previousBalance} → ₹${partner.pendingCommission} (${adjustAmount > 0 ? '+' : ''}${adjustAmount}) by ${req.admin.username}`);
+    console.log(`[Referrals] Commission adjusted for ${partner.creatorName}: ₹${previousBalance} → ₹${partner.pendingCommission} (${adjustAmount > 0 ? '+' : ''}${adjustAmount}) by ${getAdminActorName(req.admin)}`);
 
     res.json({
       message: `Commission adjusted: ₹${previousBalance} → ₹${partner.pendingCommission}`,

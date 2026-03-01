@@ -12,6 +12,10 @@ import { sendDiscordEvent } from '../utils/discord.js';
 const router = Router();
 const requireSuperadmin = requireRole('superadmin');
 
+function getAdminActorName(admin) {
+  return admin?.displayName || admin?.discordId || admin?.username || 'admin';
+}
+
 // ═══════════════════════════════════════════════════════════
 // ADMIN — List creators eligible for payout (dynamic threshold)
 // GET /api/payouts/eligible
@@ -46,7 +50,7 @@ router.get('/history', authMiddleware, async (req, res) => {
 
     const payouts = await Payout.find(filter)
       .sort({ createdAt: -1 })
-      .populate('processedBy', 'username')
+      .populate('processedBy', 'username displayName discordId')
       .limit(200);
 
     res.json(payouts);
@@ -148,7 +152,7 @@ router.post('/process', authMiddleware, requireSuperadmin, async (req, res) => {
       referralCode: partner.referralCode,
       amount: payoutAmount,
       remainingBalance: updated.pendingCommission,
-      processedBy: req.admin.username,
+      processedBy: getAdminActorName(req.admin),
     }).catch(() => {});
 
     res.json({
@@ -291,7 +295,7 @@ router.patch('/requests/:id/complete', authMiddleware, requireSuperadmin, async 
       referralCode: partner.referralCode,
       amount: pr.amount,
       remainingBalance: updated.pendingCommission,
-      processedBy: req.admin.username,
+      processedBy: getAdminActorName(req.admin),
     }).catch(() => {});
 
     res.json({
@@ -346,7 +350,7 @@ router.patch('/requests/:id/reject', authMiddleware, requireSuperadmin, async (r
       referralCode: pr.referralCode,
       amount: pr.amount,
       reason: pr.rejectionReason || 'No reason provided.',
-      rejectedBy: req.admin.username,
+      rejectedBy: getAdminActorName(req.admin),
     }).catch(() => {});
 
     res.json({ message: `Payout request rejected.`, request: pr });

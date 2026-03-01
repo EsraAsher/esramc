@@ -1,16 +1,24 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
 
 const adminSchema = new mongoose.Schema({
+  // Legacy field kept optional for backward compatibility with existing data
   username: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    default: undefined,
+  },
+  discordId: {
     type: String,
     required: true,
     unique: true,
     trim: true,
   },
-  password: {
+  displayName: {
     type: String,
-    required: true,
+    trim: true,
+    default: '',
   },
   role: {
     type: String,
@@ -18,19 +26,6 @@ const adminSchema = new mongoose.Schema({
     default: 'admin',
   },
 }, { timestamps: true });
-
-// Hash password before saving
-adminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-// Compare password method
-adminSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
 
 // Remove password from JSON output
 adminSchema.methods.toJSON = function () {

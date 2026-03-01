@@ -55,7 +55,7 @@ const AdminDashboard = () => {
           <h1 className="font-pixel text-lg sm:text-2xl text-red-400 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
             ADMIN PANEL
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Welcome, {admin?.username}</p>
+          <p className="text-gray-500 text-sm mt-1">Welcome, {admin?.displayName || admin?.discordId || admin?.username || 'Admin'}</p>
         </div>
         <button
           onClick={logout}

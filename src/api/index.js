@@ -38,19 +38,9 @@ export const fetchCollections = () => request('/collections');
 export const fetchCollectionBySlug = (slug) => request(`/collections/${slug}`);
 
 // ─── Admin Auth ───────────────────────────────────────────
-export const adminLogin = (username, password) =>
-  request('/admin/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  });
+export const getAdminDiscordAuthUrl = () => `${API_BASE}/admin/auth/discord`;
 
 export const adminVerify = () => request('/admin/me');
-
-export const adminSetup = (username, password, setupKey) =>
-  request('/admin/setup', {
-    method: 'POST',
-    body: JSON.stringify({ username, password, setupKey }),
-  });
 
 // ─── Admin Products ───────────────────────────────────────
 export const fetchAllProducts = () => request('/products/admin/all');

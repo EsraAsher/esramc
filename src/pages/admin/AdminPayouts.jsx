@@ -285,7 +285,7 @@ const AdminPayouts = () => {
                       <td className="p-4 text-white">{p.creatorName}</td>
                       <td className="p-4 font-mono text-red-400 text-xs">{p.referralCode}</td>
                       <td className="p-4 text-right text-green-400 font-semibold">₹{p.amount.toLocaleString('en-IN')}</td>
-                      <td className="p-4 text-gray-400">{p.processedBy?.username || '—'}</td>
+                      <td className="p-4 text-gray-400">{p.processedBy?.displayName || p.processedBy?.discordId || p.processedBy?.username || '—'}</td>
                       <td className="p-4 text-gray-500 text-xs max-w-50 truncate">{p.note || '—'}</td>
                     </tr>
                   ))}
