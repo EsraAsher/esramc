@@ -96,12 +96,24 @@ const CartDrawer = () => {
         }
 
         const cashfreeEnv = (orderData.cashfreeEnv || import.meta.env.VITE_CASHFREE_ENV || 'SANDBOX').toUpperCase();
+        const sdkMode = cashfreeEnv === 'PRODUCTION' ? 'production' : 'sandbox';
 
-        const cashfree = window.Cashfree({ mode: cashfreeEnv === 'PRODUCTION' ? 'production' : 'sandbox' });
+        console.log('[Cashfree Checkout Debug]', {
+          paymentSessionId: orderData.paymentSessionId,
+          cashfreeEnv,
+          sdkMode,
+          cashfreeOrderId: orderData.cashfreeOrderId,
+        });
+
+        if (typeof window.Cashfree !== 'function') {
+          throw new Error('Cashfree SDK failed to initialize. Please refresh and try again.');
+        }
+
+        const cashfree = window.Cashfree({ mode: sdkMode });
 
         const checkoutOptions = {
           paymentSessionId: orderData.paymentSessionId.trim(),
-          redirectTarget: '_modal', // opens in modal overlay, not a redirect
+          returnUrl: `${window.location.origin}?order=${orderData.orderId}`,
         };
 
         cashfree.checkout(checkoutOptions).then((result) => {
