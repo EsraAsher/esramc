@@ -131,10 +131,9 @@ export function verifyCashfreeWebhook(req) {
 
   // Cashfree uses base64-encoded HMAC-SHA256
   const timestamp = req.headers['x-webhook-timestamp'];
-  const now = Date.now();
-  const ts = Number(timestamp) * 1000;
+  const ts = Number(timestamp);
 
-  if (!timestamp || Number.isNaN(ts) || Math.abs(now - ts) > 5 * 60 * 1000) {
+  if (!timestamp || Number.isNaN(ts) || Math.abs(Date.now() - ts) > 10 * 60 * 1000) {
     return { verified: false, event: null, reason: 'Timestamp expired or invalid' };
   }
 
