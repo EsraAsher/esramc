@@ -13,14 +13,9 @@ const AdminLogin = () => {
             <h1 className="font-pixel text-xl text-red-400 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
               ADMIN ACCESS
             </h1>
-            <p className="text-gray-500 text-sm mt-2">Only allowlisted Discord admins can sign in</p>
           </div>
 
           <div className="space-y-5">
-            <div className="bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs rounded-lg p-3 text-center">
-              Password login is disabled.
-            </div>
-
             <button
               type="button"
               onClick={() => {
