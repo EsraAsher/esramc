@@ -450,12 +450,12 @@ const CartDrawer = () => {
                   Processing...
                 </span>
               ) : (
-                'Pay with Razorpay'
+                'Pay Now'
               )}
             </button>
 
             <p className="text-[10px] text-gray-500 text-center">
-              Secure payment powered by Razorpay. Your data is encrypted.
+              Secure payment. Your data is encrypted.
             </p>
           </div>
         )}
