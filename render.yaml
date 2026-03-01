@@ -24,6 +24,18 @@ services:
         sync: false
       - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
+      # ── Payment Provider Switch (razorpay / cashfree) ──
+      - key: PAYMENT_PROVIDER
+        value: cashfree
+      # ── Cashfree ──
+      - key: CASHFREE_APP_ID
+        sync: false
+      - key: CASHFREE_SECRET_KEY
+        sync: false
+      - key: CASHFREE_WEBHOOK_SECRET
+        sync: false
+      - key: CASHFREE_ENV
+        value: SANDBOX
       - key: FRONTEND_URL
         sync: false
       - key: RCON_HOST

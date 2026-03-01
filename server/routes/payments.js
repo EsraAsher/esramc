@@ -1,11 +1,12 @@
 /**
- * Payment Routes — Razorpay integration (Webhook-Only Confirmation)
+ * Payment Routes — Razorpay + Cashfree integration (Webhook-Only Confirmation)
  *
- * POST /api/payments/create-order   → create Razorpay order + DB order
- * POST /api/payments/webhook        → Razorpay webhook (server-to-server) — ONLY way to confirm payment
- * GET  /api/payments/order/:id      → get order status (for polling / thank-you page)
+ * POST /api/payments/create-order       → create payment order (provider decided by PAYMENT_PROVIDER env)
+ * POST /api/payments/webhook             → Razorpay webhook (server-to-server)
+ * POST /api/payments/cashfree-webhook    → Cashfree webhook (server-to-server)
+ * GET  /api/payments/order/:id           → get order status (for polling / thank-you page)
  *
- * ⚠️  Frontend NEVER confirms payment. Only Razorpay webhook marks orders as paid.
+ * ⚠️  Frontend NEVER confirms payment. Only webhooks mark orders as paid.
  */
 import { Router } from 'express';
 import crypto from 'crypto';
@@ -16,6 +17,8 @@ import Product from '../models/Product.js';
 import StoreCode from '../models/StoreCode.js';
 import ReferralPartner from '../models/ReferralPartner.js';
 import ReferralFraudLog from '../models/ReferralFraudLog.js';
+import { createCashfreeOrder, verifyCashfreeWebhook } from '../services/cashfree.js';
+import { deliverOrder } from '../services/rcon.js';
 
 const router = Router();
 
@@ -147,6 +150,57 @@ router.post('/create-order', checkoutLimiter, async (req, res) => {
     if (referralSnapshot) {
       logReferralFraudCheck(req.ip, email, referralSnapshot.referralCodeUsed).catch(() => {});
     }
+
+    // ── Provider switch ─────────────────────────────────────
+    const provider = (process.env.PAYMENT_PROVIDER || 'razorpay').toLowerCase();
+
+    if (provider === 'cashfree') {
+      // ── Cashfree flow ─────────────────────────────────────
+      // 1. Persist order in DB first (status: pending)
+      const order = await Order.create({
+        mcUsername,
+        email: email || '',
+        items: orderItems,
+        total,
+        currency: 'INR',
+        provider: 'cashfree',
+        status: 'pending',
+        paymentStatus: 'created',
+        ...(referralSnapshot || {}),
+      });
+
+      // 2. Create Cashfree order via API
+      const cfResult = await createCashfreeOrder({
+        orderId: order._id.toString(),
+        amount: total,
+        currency: 'INR',
+        mcUsername,
+        email: email || '',
+        returnUrl: `${process.env.FRONTEND_URL || 'https://store.redlinesmp.fun'}?order=${order._id}`,
+      });
+
+      // 3. Save Cashfree order ID back
+      order.cashfreeOrderId = cfResult.cfOrderId;
+      await order.save();
+
+      // 4. Return response (same shape + cashfree extras)
+      return res.json({
+        orderId: order._id,
+        provider: 'cashfree',
+        paymentSessionId: cfResult.paymentSessionId,
+        cashfreeOrderId: cfResult.cfOrderId,
+        amount: Math.round(total * 100), // paise (same unit as Razorpay for frontend consistency)
+        currency: 'INR',
+        mcUsername,
+        ...(referralSnapshot ? {
+          referralApplied: true,
+          referralCode: referralSnapshot.referralCodeUsed,
+          discountAmount: referralSnapshot.referralDiscountApplied,
+        } : {}),
+      });
+    }
+
+    // ── Razorpay flow (default, unchanged) ──────────────────
     // Create Razorpay order (amount in smallest unit — paise for INR)
     const rz = getRazorpay();
     const rzOrder = await rz.orders.create({
@@ -166,6 +220,7 @@ router.post('/create-order', checkoutLimiter, async (req, res) => {
       items: orderItems,
       total,
       currency: 'INR',
+      provider: 'razorpay',
       razorpayOrderId: rzOrder.id,
       status: 'created',
       paymentStatus: 'created',
@@ -175,6 +230,7 @@ router.post('/create-order', checkoutLimiter, async (req, res) => {
 
     res.json({
       orderId: order._id,
+      provider: 'razorpay',
       razorpayOrderId: rzOrder.id,
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       amount: rzOrder.amount,
@@ -295,6 +351,139 @@ router.post('/webhook', async (req, res) => {
   } catch (err) {
     console.error('[Webhook] Error:', err);
     res.status(200).send('Error handled'); // always 200 to prevent Razorpay retries
+  }
+});
+
+// ─── 3b. Cashfree Webhook ─────────────────────────────────
+// POST /api/payments/cashfree-webhook — called by Cashfree servers
+// ⚠️  Raw body parsing is handled in server/index.js BEFORE express.json()
+router.post('/cashfree-webhook', async (req, res) => {
+  try {
+    // Verify signature
+    const { verified, event, reason } = verifyCashfreeWebhook(req);
+    if (!verified) {
+      console.warn(`[Cashfree Webhook] Rejected: ${reason}`);
+      return res.status(400).send('Invalid webhook');
+    }
+
+    console.log('[Cashfree Webhook] Received event type:', event?.type);
+
+    // Only process PAYMENT_SUCCESS events
+    // Cashfree event types: PAYMENT_SUCCESS, PAYMENT_FAILED, PAYMENT_USER_DROPPED, etc.
+    if (event.type !== 'PAYMENT_SUCCESS_WEBHOOK') {
+      // Also check for the older event format
+      const eventType = event.type || event.event;
+      if (eventType !== 'PAYMENT_SUCCESS_WEBHOOK' && eventType !== 'PAYMENT_SUCCESS') {
+        console.log(`[Cashfree Webhook] Ignoring event: ${eventType}`);
+        return res.status(200).send('Event ignored');
+      }
+    }
+
+    // Extract payment data from Cashfree payload
+    const paymentData = event.data || {};
+    const cfPayment = paymentData.payment || {};
+    const cfOrder = paymentData.order || {};
+    const internalOrderId = cfOrder.order_id; // This is our Mongo _id
+    const cfPaymentId = String(cfPayment.cf_payment_id || cfPayment.payment_id || '');
+    const paidAmount = parseFloat(cfOrder.order_amount || cfPayment.payment_amount || 0);
+    const paidCurrency = cfOrder.order_currency || cfPayment.payment_currency || 'INR';
+    const paymentStatus = cfPayment.payment_status || '';
+
+    console.log('[Cashfree Webhook] Order ID:', internalOrderId);
+    console.log('[Cashfree Webhook] Payment ID:', cfPaymentId);
+    console.log('[Cashfree Webhook] Amount:', paidAmount, paidCurrency);
+    console.log('[Cashfree Webhook] Payment Status:', paymentStatus);
+
+    if (!internalOrderId) {
+      console.warn('[Cashfree Webhook] No order_id in payload');
+      return res.status(200).send('Missing order_id');
+    }
+
+    // Find the order in DB
+    const order = await Order.findById(internalOrderId);
+    if (!order || order.provider !== 'cashfree') {
+      console.error('[Cashfree Webhook] Provider mismatch or order not found');
+      return res.status(200).end();
+    }
+
+    // ── Idempotency: already paid → skip ──
+    if (order.status === 'paid' || order.status === 'delivered') {
+      console.log(`[Cashfree Webhook] Order ${internalOrderId} already ${order.status} — skipping`);
+      return res.status(200).end();
+    }
+
+    // ── Validate amount & currency match ──
+    const expectedAmount = order.total;
+    if (Math.abs(paidAmount - expectedAmount) > 0.01) {
+      console.error(`[Cashfree Webhook] ⚠️ AMOUNT MISMATCH: expected ${expectedAmount}, got ${paidAmount} for order ${internalOrderId}`);
+      // Log suspicious mismatch but don't expose details
+      return res.status(200).send('Amount mismatch');
+    }
+    if (paidCurrency !== order.currency) {
+      console.error(`[Cashfree Webhook] ⚠️ CURRENCY MISMATCH: expected ${order.currency}, got ${paidCurrency} for order ${internalOrderId}`);
+      return res.status(200).send('Currency mismatch');
+    }
+
+    // ── Validate payment status ──
+    if (paymentStatus !== 'SUCCESS') {
+      console.log(`[Cashfree Webhook] Payment not successful (status: ${paymentStatus}) for order ${internalOrderId}`);
+      if (paymentStatus === 'FAILED' || paymentStatus === 'CANCELLED') {
+        order.status = 'failed';
+        order.paymentStatus = 'failed';
+        await order.save();
+      }
+      return res.status(200).send('Payment not successful');
+    }
+
+    // ── Prevent duplicate payment ID processing ──
+    if (cfPaymentId) {
+      const duplicate = await Order.findOne({ cashfreePaymentId: cfPaymentId });
+      if (duplicate && duplicate._id.toString() !== order._id.toString()) {
+        console.error(`[Cashfree Webhook] ⚠️ Payment ID ${cfPaymentId} already used on a different order!`);
+        return res.status(200).send('Duplicate payment ID');
+      }
+    }
+
+    // ── Mark order as paid ──
+    order.status = 'paid';
+    order.paymentStatus = 'paid';
+    order.webhookVerified = true;
+    order.deliveryStatus = 'pending';
+    order.cashfreePaymentId = cfPaymentId;
+    order.paidAt = new Date();
+    await order.save();
+
+    console.log(`[Cashfree Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
+
+    // ── RCON delivery ──
+    try {
+      const { success, log } = await deliverOrder(order.mcUsername, order.items);
+      order.deliveryStatus = success ? 'delivered' : 'failed';
+      order.deliveryLog = log;
+      order.deliveredAt = success ? new Date() : undefined;
+      await order.save();
+      if (success) {
+        console.log(`[Cashfree Webhook] ✅ RCON delivery complete for order ${order._id}`);
+      } else {
+        console.warn(`[Cashfree Webhook] ⚠️ RCON delivery failed for order ${order._id}`);
+      }
+    } catch (rconErr) {
+      console.error(`[Cashfree Webhook] RCON error for order ${order._id}:`, rconErr.message);
+      order.deliveryStatus = 'failed';
+      order.deliveryLog = [`[RCON] ERROR: ${rconErr.message}`];
+      await order.save();
+    }
+
+    // Update product analytics
+    await updateProductAnalytics(order);
+
+    // Track referral commission
+    await trackReferralCommission(order);
+
+    res.status(200).send('OK');
+  } catch (err) {
+    console.error('[Cashfree Webhook] Error:', err);
+    res.status(200).send('Error handled'); // always 200 to prevent Cashfree retries
   }
 });
 

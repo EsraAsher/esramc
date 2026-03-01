@@ -97,9 +97,10 @@ app.use(cors({
 app.use('/api', globalLimiter);
 app.use(['/api/admin/login', '/api/creator/login'], authLimiter);
 
-// ⚠️ Webhook route MUST use raw body — define BEFORE express.json()
+// ⚠️ Webhook routes MUST use raw body — define BEFORE express.json()
 // Support both plural and singular paths to avoid dashboard URL mismatch issues.
 app.use(['/api/payments/webhook', '/api/payment/webhook'], express.raw({ type: 'application/json' }));
+app.use(['/api/payments/cashfree-webhook', '/api/payment/cashfree-webhook'], express.raw({ type: 'application/json' }));
 
 app.use(express.json({
   verify: (req, res, buf) => {

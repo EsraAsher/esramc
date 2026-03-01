@@ -30,6 +30,19 @@ const CartDrawer = () => {
     });
   };
 
+  // ─── Load Cashfree script ──────────────────────────────
+  const loadCashfreeScript = () => {
+    return new Promise((resolve) => {
+      if (document.getElementById('cashfree-script')) return resolve(true);
+      const script = document.createElement('script');
+      script.id = 'cashfree-script';
+      script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   // ─── Verify store code ──────────────────────────────────
   const handleVerifyCode = async () => {
     if (!mcUsername.trim() || !storeCode.trim()) return;
@@ -60,10 +73,6 @@ const CartDrawer = () => {
       // Save username for next visit
       localStorage.setItem('mc_username', mcUsername.trim());
 
-      // Load Razorpay
-      const loaded = await loadRazorpayScript();
-      if (!loaded) throw new Error('Failed to load Razorpay. Check your internet connection.');
-
       // Create order on backend (includes verified store code + optional referral)
       const orderData = await createPaymentOrder(
         mcUsername.trim(),
@@ -76,48 +85,92 @@ const CartDrawer = () => {
         referralCode.trim() || undefined
       );
 
-      // Open Razorpay checkout
-      const options = {
-        key: orderData.razorpayKeyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'Redline SMP',
-        description: `Purchase for ${mcUsername.trim()}`,
-        order_id: orderData.razorpayOrderId,
-        prefill: {
-          email: email.trim() || undefined,
-        },
-        theme: {
-          color: '#dc2626',
-          backdrop_color: 'rgba(0,0,0,0.85)',
-        },
-        modal: {
-          ondismiss: () => {
-            setProcessing(false);
-          },
-        },
-        handler: function (response) {
-          // Payment succeeded on Razorpay's side — webhook will confirm it
-          // Frontend does NOT verify or update DB. Just show processing state.
-          setCheckoutStep('processing');
-          setOrderResult({
-            orderId: orderData.orderId,
-            razorpayOrderId: response.razorpay_order_id,
-          });
-          clearCart();
-          setProcessing(false);
-          // Show success after brief processing indication
-          setTimeout(() => setCheckoutStep('success'), 2000);
-        },
-      };
+      // ── Provider switch: backend tells us which gateway to use ──
+      if (orderData.provider === 'cashfree') {
+        // ── Cashfree checkout flow ──
+        const loaded = await loadCashfreeScript();
+        if (!loaded) throw new Error('Failed to load payment gateway. Check your internet connection.');
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response) => {
-        setErrorMsg(response.error?.description || 'Payment failed. Please try again.');
-        setCheckoutStep('error');
-        setProcessing(false);
-      });
-      rzp.open();
+        const cashfree = window.Cashfree({ mode: import.meta.env.VITE_CASHFREE_ENV === 'PRODUCTION' ? 'production' : 'sandbox' });
+
+        const checkoutOptions = {
+          paymentSessionId: orderData.paymentSessionId,
+          redirectTarget: '_modal', // opens in modal overlay, not a redirect
+        };
+
+        cashfree.checkout(checkoutOptions).then((result) => {
+          if (result.error) {
+            // Payment failed or was cancelled
+            setErrorMsg(result.error.message || 'Payment failed. Please try again.');
+            setCheckoutStep('error');
+            setProcessing(false);
+          } else if (result.redirect) {
+            // Payment went through redirect (shouldn't happen with _modal)
+            setCheckoutStep('processing');
+            setOrderResult({ orderId: orderData.orderId });
+            clearCart();
+            setProcessing(false);
+            setTimeout(() => setCheckoutStep('success'), 2000);
+          } else if (result.paymentDetails) {
+            // Payment completed in modal
+            setCheckoutStep('processing');
+            setOrderResult({ orderId: orderData.orderId });
+            clearCart();
+            setProcessing(false);
+            setTimeout(() => setCheckoutStep('success'), 2000);
+          }
+        }).catch((error) => {
+          setErrorMsg(error?.message || 'Payment initialization failed. Please try again.');
+          setCheckoutStep('error');
+          setProcessing(false);
+        });
+      } else {
+        // ── Razorpay checkout flow (default, unchanged) ──
+        const loaded = await loadRazorpayScript();
+        if (!loaded) throw new Error('Failed to load Razorpay. Check your internet connection.');
+
+        const options = {
+          key: orderData.razorpayKeyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: 'Redline SMP',
+          description: `Purchase for ${mcUsername.trim()}`,
+          order_id: orderData.razorpayOrderId,
+          prefill: {
+            email: email.trim() || undefined,
+          },
+          theme: {
+            color: '#dc2626',
+            backdrop_color: 'rgba(0,0,0,0.85)',
+          },
+          modal: {
+            ondismiss: () => {
+              setProcessing(false);
+            },
+          },
+          handler: function (response) {
+            // Payment succeeded on Razorpay's side — webhook will confirm it
+            // Frontend does NOT verify or update DB. Just show processing state.
+            setCheckoutStep('processing');
+            setOrderResult({
+              orderId: orderData.orderId,
+              razorpayOrderId: response.razorpay_order_id,
+            });
+            clearCart();
+            setProcessing(false);
+            // Show success after brief processing indication
+            setTimeout(() => setCheckoutStep('success'), 2000);
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', (response) => {
+          setErrorMsg(response.error?.description || 'Payment failed. Please try again.');
+          setCheckoutStep('error');
+          setProcessing(false);
+        });
+        rzp.open();
+      }
     } catch (err) {
       setErrorMsg(err.message || 'Something went wrong');
       setCheckoutStep('error');

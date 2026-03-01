@@ -41,6 +41,13 @@ const orderSchema = new mongoose.Schema({
     default: 'INR',
   },
 
+  // ─── Payment Provider ──────────────────────
+  provider: {
+    type: String,
+    enum: ['razorpay', 'cashfree'],
+    default: 'razorpay',
+  },
+
   // ─── Razorpay ─────────────────────────────
   razorpayOrderId: {
     type: String,
@@ -48,6 +55,14 @@ const orderSchema = new mongoose.Schema({
   },
   razorpayPaymentId: String,
   razorpaySignature: String,
+
+  // ─── Cashfree ─────────────────────────────
+  cashfreeOrderId: {
+    type: String,
+    index: true,
+    sparse: true,
+  },
+  cashfreePaymentId: String,
 
   // ─── Status tracking ─────────────────────
   status: {
