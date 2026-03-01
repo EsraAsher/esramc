@@ -91,10 +91,16 @@ const CartDrawer = () => {
         const loaded = await loadCashfreeScript();
         if (!loaded) throw new Error('Failed to load payment gateway. Check your internet connection.');
 
-        const cashfree = window.Cashfree({ mode: import.meta.env.VITE_CASHFREE_ENV === 'PRODUCTION' ? 'production' : 'sandbox' });
+        if (!orderData.paymentSessionId || typeof orderData.paymentSessionId !== 'string') {
+          throw new Error('Invalid payment session from server. Please try again.');
+        }
+
+        const cashfreeEnv = (orderData.cashfreeEnv || import.meta.env.VITE_CASHFREE_ENV || 'SANDBOX').toUpperCase();
+
+        const cashfree = window.Cashfree({ mode: cashfreeEnv === 'PRODUCTION' ? 'production' : 'sandbox' });
 
         const checkoutOptions = {
-          paymentSessionId: orderData.paymentSessionId,
+          paymentSessionId: orderData.paymentSessionId.trim(),
           redirectTarget: '_modal', // opens in modal overlay, not a redirect
         };
 

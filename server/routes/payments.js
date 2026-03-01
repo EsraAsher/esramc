@@ -189,6 +189,7 @@ router.post('/create-order', checkoutLimiter, async (req, res) => {
         provider: 'cashfree',
         paymentSessionId: cfResult.paymentSessionId,
         cashfreeOrderId: cfResult.cfOrderId,
+        cashfreeEnv: (process.env.CASHFREE_ENV || 'SANDBOX').toUpperCase(),
         amount: Math.round(total * 100), // paise (same unit as Razorpay for frontend consistency)
         currency: 'INR',
         mcUsername,
