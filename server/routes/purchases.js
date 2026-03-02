@@ -10,7 +10,7 @@ import Purchase from '../models/Purchase.js';
 
 const router = Router();
 
-const PLUGIN_SERVER_SECRET = process.env.PLUGIN_SERVER_SECRET || '';
+const PLUGIN_SERVER_SECRET = process.env.SERVER_SECRET || '';
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
