@@ -76,3 +76,33 @@ export async function deliverOrder(mcUsername, items) {
     try { rcon?.end(); } catch { /* ignore */ }
   }
 }
+
+/**
+ * Execute a single RCON command.
+ * Used by the hybrid delivery system for per-purchase delivery.
+ *
+ * @param {string} command — fully interpolated command string
+ * @returns {{ success: boolean, response: string }}
+ */
+export async function executeCommand(command) {
+  if (!isRconConfigured()) {
+    return { success: false, response: 'RCON not configured' };
+  }
+
+  let rcon;
+  try {
+    rcon = await Rcon.connect({
+      host: RCON_HOST,
+      port: RCON_PORT,
+      password: RCON_PASSWORD,
+      timeout: 10000,
+    });
+
+    const response = await rcon.send(command);
+    return { success: true, response: response || '' };
+  } catch (err) {
+    return { success: false, response: err.message };
+  } finally {
+    try { rcon?.end(); } catch { /* ignore */ }
+  }
+}

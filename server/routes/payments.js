@@ -19,6 +19,7 @@ import ReferralPartner from '../models/ReferralPartner.js';
 import ReferralFraudLog from '../models/ReferralFraudLog.js';
 import { createCashfreeOrder, verifyCashfreeWebhook } from '../services/cashfree.js';
 import { deliverOrder } from '../services/rcon.js';
+import { createPurchases, attemptDelivery } from '../services/deliveryService.js';
 
 const router = Router();
 
@@ -321,9 +322,12 @@ router.post('/webhook', async (req, res) => {
       return res.status(200).send('Already processed');
     }
 
-    // Find and update order — ONLY set paid + pending delivery
+    // Find and update order atomically — only unpaid/undelivered orders can transition
     const order = await Order.findOneAndUpdate(
-      { razorpayOrderId: razorpayOrderId },
+      {
+        razorpayOrderId: razorpayOrderId,
+        status: { $nin: ['paid', 'delivered'] },
+      },
       {
         status: 'paid',
         paymentStatus: 'paid',
@@ -336,11 +340,45 @@ router.post('/webhook', async (req, res) => {
     );
 
     if (!order) {
+      const alreadyProcessed = await Order.findOne({ razorpayOrderId: razorpayOrderId }).select('_id status');
+      if (alreadyProcessed && ['paid', 'delivered'].includes(alreadyProcessed.status)) {
+        console.log(`[Webhook] Already finalized order ${alreadyProcessed._id} (${alreadyProcessed.status})`);
+        return res.status(200).send('Already processed');
+      }
       console.warn(`[Webhook] Order not found for razorpayOrderId: ${razorpayOrderId}`);
       return res.status(200).send('Order not found'); // 200 so Razorpay doesn't retry
     }
 
     console.log(`[Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
+
+    // ── Hybrid delivery: create Purchase records & attempt RCON ──
+    try {
+      const purchases = await createPurchases(order);
+      let allDelivered = true;
+      const deliveryLog = [];
+
+      for (const purchase of purchases) {
+        const { delivered, log } = await attemptDelivery(purchase);
+        deliveryLog.push(...log);
+        if (!delivered) allDelivered = false;
+      }
+
+      order.deliveryStatus = allDelivered ? 'delivered' : 'pending';
+      order.deliveryLog = deliveryLog;
+      order.deliveredAt = allDelivered ? new Date() : undefined;
+      await order.save();
+
+      if (allDelivered) {
+        console.log(`[Webhook] ✅ All purchases delivered for order ${order._id}`);
+      } else {
+        console.warn(`[Webhook] ⚠️ Some purchases pending for order ${order._id} — will retry`);
+      }
+    } catch (deliveryErr) {
+      console.error(`[Webhook] Delivery error for order ${order._id}:`, deliveryErr.message);
+      order.deliveryStatus = 'pending';
+      order.deliveryLog = [`[Delivery] ERROR: ${deliveryErr.message}`];
+      await order.save();
+    }
 
     // Update product analytics
     await updateProductAnalytics(order);
@@ -456,22 +494,32 @@ router.post('/cashfree-webhook', async (req, res) => {
 
     console.log(`[Cashfree Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
 
-    // ── RCON delivery ──
+    // ── Hybrid delivery: create Purchase records & attempt RCON ──
     try {
-      const { success, log } = await deliverOrder(order.mcUsername, order.items);
-      order.deliveryStatus = success ? 'delivered' : 'failed';
-      order.deliveryLog = log;
-      order.deliveredAt = success ? new Date() : undefined;
-      await order.save();
-      if (success) {
-        console.log(`[Cashfree Webhook] ✅ RCON delivery complete for order ${order._id}`);
-      } else {
-        console.warn(`[Cashfree Webhook] ⚠️ RCON delivery failed for order ${order._id}`);
+      const purchases = await createPurchases(order);
+      let allDelivered = true;
+      const deliveryLog = [];
+
+      for (const purchase of purchases) {
+        const { delivered, log } = await attemptDelivery(purchase);
+        deliveryLog.push(...log);
+        if (!delivered) allDelivered = false;
       }
-    } catch (rconErr) {
-      console.error(`[Cashfree Webhook] RCON error for order ${order._id}:`, rconErr.message);
-      order.deliveryStatus = 'failed';
-      order.deliveryLog = [`[RCON] ERROR: ${rconErr.message}`];
+
+      order.deliveryStatus = allDelivered ? 'delivered' : 'pending';
+      order.deliveryLog = deliveryLog;
+      order.deliveredAt = allDelivered ? new Date() : undefined;
+      await order.save();
+
+      if (allDelivered) {
+        console.log(`[Cashfree Webhook] ✅ All purchases delivered for order ${order._id}`);
+      } else {
+        console.warn(`[Cashfree Webhook] ⚠️ Some purchases pending for order ${order._id} — will retry`);
+      }
+    } catch (deliveryErr) {
+      console.error(`[Cashfree Webhook] Delivery error for order ${order._id}:`, deliveryErr.message);
+      order.deliveryStatus = 'pending';
+      order.deliveryLog = [`[Delivery] ERROR: ${deliveryErr.message}`];
       await order.save();
     }
 
