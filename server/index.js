@@ -19,6 +19,7 @@ import payoutRoutes from './routes/payouts.js';
 import settingsRoutes from './routes/settings.js';
 import botRoutes from './routes/bot.js';
 import purchaseRoutes from './routes/purchases.js';
+import motdRoutes from './routes/motd.js';
 
 dotenv.config();
 
@@ -140,6 +141,7 @@ app.use('/api/payouts', payoutRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/purchases', purchaseRoutes);
+app.use('/api/motd', motdRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

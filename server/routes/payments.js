@@ -20,6 +20,7 @@ import ReferralFraudLog from '../models/ReferralFraudLog.js';
 import { createCashfreeOrder, verifyCashfreeWebhook } from '../services/cashfree.js';
 import { deliverOrder } from '../services/rcon.js';
 import { createPurchases } from '../services/deliveryService.js';
+import { decrementMOTDStock } from './motd.js';
 
 const router = Router();
 
@@ -351,6 +352,11 @@ router.post('/webhook', async (req, res) => {
 
     console.log(`[Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
 
+    // ── Decrement MOTD stock (if applicable) ──
+    for (const item of order.items) {
+      await decrementMOTDStock(item.product);
+    }
+
     // ── Create Purchase records — plugin will deliver in-game ──
     try {
       const purchases = await createPurchases(order);
@@ -472,6 +478,11 @@ router.post('/cashfree-webhook', async (req, res) => {
     await order.save();
 
     console.log(`[Cashfree Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
+
+    // ── Decrement MOTD stock (if applicable) ──
+    for (const item of order.items) {
+      await decrementMOTDStock(item.product);
+    }
 
     // ── Create Purchase records — plugin will deliver in-game ──
     try {

@@ -224,3 +224,11 @@ export const submitCreatorPayoutRequest = (data) =>
   creatorRequest('/creator/me/payout-request', { method: 'POST', body: JSON.stringify(data) });
 export const fetchCreatorPayoutStatus = () =>
   creatorRequest('/creator/me/payout-request');
+
+// ─── MOTD (Limited Time Deal) ─────────────────────────────
+export const fetchActiveMOTD = () => request('/motd');
+export const fetchAdminMOTD = () => request('/motd/admin');
+export const updateAdminMOTD = (data) =>
+  request('/motd/admin', { method: 'PUT', body: JSON.stringify(data) });
+export const resetMOTDStock = () =>
+  request('/motd/admin/reset-stock', { method: 'POST' });

@@ -23,6 +23,7 @@ import CreatorLoginPage from './pages/CreatorLoginPage';
 import CreatorCallbackPage from './pages/CreatorCallbackPage';
 import CreatorDashboardPage from './pages/CreatorDashboardPage';
 import CreatorProgramPage from './pages/CreatorProgramPage';
+import LimitedTimeDeal from './components/LimitedTimeDeal';
 
 function StorePage() {
   const [sections, setSections] = useState([]);
@@ -46,6 +47,9 @@ function StorePage() {
   return (
     <main className="relative z-10 w-full">
       <div className="space-y-6 sm:space-y-8 md:space-y-10 pb-12 sm:pb-20 pt-24 sm:pt-28">
+        {/* Limited Time Deal / MOTD Section */}
+        <LimitedTimeDeal />
+
         {loading ? (
           <div className="flex items-center justify-center py-32">
             <div className="text-gray-500 font-pixel text-sm animate-pulse">Loading store...</div>
