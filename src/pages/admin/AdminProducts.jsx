@@ -148,9 +148,17 @@ const AdminProducts = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-pixel text-sm text-red-400">
-          MANAGE PRODUCTS ({products.length})
-        </h2>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="font-pixel text-sm text-red-400">MANAGE PRODUCTS</h2>
+          <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400 font-pixel text-[10px]">
+            {products.length} total
+          </span>
+          {products.filter(p => !p.isActive).length > 0 && (
+            <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 font-pixel text-[10px]">
+              {products.filter(p => !p.isActive).length} inactive
+            </span>
+          )}
+        </div>
         <button
           onClick={handleNew}
           className="px-4 py-2 font-pixel text-xs bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors shadow-[0_0_15px_rgba(255,0,0,0.3)]"
