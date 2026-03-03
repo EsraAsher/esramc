@@ -113,7 +113,7 @@ const CartDrawer = () => {
 
         const checkoutOptions = {
           paymentSessionId: orderData.paymentSessionId.trim(),
-          returnUrl: `${window.location.origin}?order=${orderData.orderId}`,
+          returnUrl: `${window.location.origin}/store?order=${orderData.orderId}`,
         };
 
         cashfree.checkout(checkoutOptions).then((result) => {
