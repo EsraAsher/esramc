@@ -8,6 +8,7 @@
 import { Router } from 'express';
 import crypto from 'crypto';
 import Purchase from '../models/Purchase.js';
+import Order from '../models/Order.js';
 
 const router = Router();
 
@@ -26,6 +27,41 @@ function safeSecretEquals(incoming, expected) {
   const expectedBuf = Buffer.from(String(expected));
   if (incomingBuf.length !== expectedBuf.length) return false;
   return crypto.timingSafeEqual(incomingBuf, expectedBuf);
+}
+
+/**
+ * After any purchase status change, re-evaluate and sync the parent Order's
+ * deliveryStatus based on the current state of all its purchases:
+ *   - all delivered          → 'delivered'
+ *   - any permanently failed → 'failed'
+ *   - otherwise              → 'pending'
+ */
+async function syncOrderDeliveryStatus(orderId) {
+  if (!orderId) return;
+  try {
+    const purchases = await Purchase.find({ orderId }).select('status').lean();
+    if (!purchases.length) return;
+
+    const allDelivered = purchases.every((p) => p.status === 'delivered');
+    const anyFailed    = purchases.some((p) => p.status === 'failed');
+    const anyPending   = purchases.some((p) => p.status === 'pending');
+
+    let deliveryStatus;
+    if (allDelivered) {
+      deliveryStatus = 'delivered';
+    } else if (anyFailed && !anyPending) {
+      deliveryStatus = 'failed';
+    } else {
+      deliveryStatus = 'pending';
+    }
+
+    const update = { deliveryStatus };
+    if (deliveryStatus === 'delivered') update.deliveredAt = new Date();
+
+    await Order.findByIdAndUpdate(orderId, { $set: update });
+  } catch (err) {
+    console.error('[Purchases] Failed to sync order delivery status:', err.message);
+  }
 }
 
 /**
@@ -106,6 +142,7 @@ router.post('/mark-delivered', verifyPluginSecret, async (req, res) => {
     }
 
     console.log(`[Purchases] ✅ Delivered purchase ${purchaseId} for ${updated.player}`);
+    await syncOrderDeliveryStatus(updated.orderId);
     res.json({ success: true });
   } catch (err) {
     console.error('[Purchases] Error marking delivered:', err.message);
@@ -164,6 +201,7 @@ router.post('/mark-failed', verifyPluginSecret, async (req, res) => {
       console.warn(
         `[Purchases] ❌ Purchase ${purchaseId} for ${updated.player} permanently failed after ${updated.deliveryAttempts} attempt(s). Last error: ${errorMsg}`
       );
+      await syncOrderDeliveryStatus(updated.orderId);
       return res.json({ success: true, status: 'failed', attempts: updated.deliveryAttempts });
     }
 
