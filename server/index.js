@@ -61,6 +61,8 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many requests. Please try again later.' },
+  // Skip plugin delivery endpoints — they have their own limiter
+  skip: (req) => req.path.startsWith('/purchases'),
 });
 
 const authLimiter = rateLimit({
@@ -69,6 +71,17 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many login attempts. Please try again later.' },
+});
+
+// Plugin (Minecraft server) delivery endpoints get a much higher limit.
+// A single server IP polls /unnotified per player and calls mark-delivered/mark-failed
+// frequently — 1000 req / 15 min is more than enough for any realistic player count.
+const pluginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests. Please try again later.' },
 });
 
 // ─── CORS ─────────────────────────────────────────────────
@@ -96,6 +109,7 @@ app.use(cors({
 }));
 
 app.use('/api', globalLimiter);
+app.use('/api/purchases', pluginLimiter);
 app.use(['/api/admin/login', '/api/creator/login'], authLimiter);
 
 // ⚠️ Webhook routes MUST use raw body — define BEFORE express.json()
