@@ -358,7 +358,6 @@ router.post('/webhook', async (req, res) => {
     } catch (deliveryErr) {
       console.error(`[Webhook] Failed to create purchases for order ${order._id}:`, deliveryErr.message);
     }
-    }
 
     // Update product analytics
     await updateProductAnalytics(order);
@@ -480,7 +479,6 @@ router.post('/cashfree-webhook', async (req, res) => {
       console.log(`[Cashfree Webhook] ✅ ${purchases.length} purchase record(s) queued for order ${order._id} — pending plugin delivery`);
     } catch (deliveryErr) {
       console.error(`[Cashfree Webhook] Failed to create purchases for order ${order._id}:`, deliveryErr.message);
-    }
     }
 
     // Update product analytics
