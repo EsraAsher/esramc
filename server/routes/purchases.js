@@ -53,7 +53,7 @@ router.get('/unnotified', verifyPluginSecret, async (req, res) => {
       status: 'pending',
     })
       .sort({ createdAt: 1 })
-      .select('_id type value player')
+      .select('_id type value player command')
       .lean();
 
     const formattedPurchases = purchases.map((p) => {
@@ -62,6 +62,7 @@ router.get('/unnotified', verifyPluginSecret, async (req, res) => {
         player: p.player,
         type: p.type,
         status: 'pending',
+        command: p.command || '',
       };
       if (p.type === 'rank') {
         base.rank = String(p.value);
