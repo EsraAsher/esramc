@@ -53,7 +53,7 @@ const LimitedTimeDeal = () => {
   const [deal, setDeal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
-  const { addToCart } = useCart();
+  const { addToCart, setCartOpen } = useCart();
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -78,6 +78,7 @@ const LimitedTimeDeal = () => {
       image: product.image,
     });
     setAdded(true);
+    setCartOpen(true);
     setTimeout(() => setAdded(false), 800);
   };
 
