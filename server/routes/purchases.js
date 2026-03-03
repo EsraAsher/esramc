@@ -90,7 +90,7 @@ router.post('/mark-delivered', verifyPluginSecret, async (req, res) => {
 
     const updated = await Purchase.findOneAndUpdate(
       { _id: purchaseId, status: 'pending' },
-      { $set: { status: 'delivered', deliveredAt: new Date() } },
+      { $set: { status: 'delivered', deliveredAt: new Date(), lastError: null } },
       { new: true }
     );
 
@@ -125,10 +125,28 @@ router.post('/mark-failed', verifyPluginSecret, async (req, res) => {
       return res.status(400).json({ success: false, message: 'purchaseId is required' });
     }
 
-    // Increment attempts and store last error
+    // Single atomic pipeline update: increment attempts + conditionally escalate status
     const updated = await Purchase.findOneAndUpdate(
       { _id: purchaseId, status: 'pending' },
-      { $inc: { deliveryAttempts: 1 }, $set: { lastError: errorMsg } },
+      [
+        {
+          $set: {
+            deliveryAttempts: { $add: ['$deliveryAttempts', 1] },
+            lastError: errorMsg,
+          },
+        },
+        {
+          $set: {
+            status: {
+              $cond: {
+                if: { $gte: ['$deliveryAttempts', DELIVERY_ATTEMPT_THRESHOLD] },
+                then: 'failed',
+                else: '$status',
+              },
+            },
+          },
+        },
+      ],
       { new: true }
     );
 
@@ -141,11 +159,9 @@ router.post('/mark-failed', verifyPluginSecret, async (req, res) => {
       return res.json({ success: true, status: existing.status });
     }
 
-    // Escalate to 'failed' if threshold reached
-    if (updated.deliveryAttempts >= DELIVERY_ATTEMPT_THRESHOLD) {
-      await Purchase.findByIdAndUpdate(purchaseId, { $set: { status: 'failed' } });
+    if (updated.status === 'failed') {
       console.warn(
-        `[Purchases] ❌ Purchase ${purchaseId} for ${updated.player} failed after ${updated.deliveryAttempts} attempt(s). Last error: ${errorMsg}`
+        `[Purchases] ❌ Purchase ${purchaseId} for ${updated.player} permanently failed after ${updated.deliveryAttempts} attempt(s). Last error: ${errorMsg}`
       );
       return res.json({ success: true, status: 'failed', attempts: updated.deliveryAttempts });
     }
