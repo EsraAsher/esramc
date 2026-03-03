@@ -19,7 +19,6 @@ import payoutRoutes from './routes/payouts.js';
 import settingsRoutes from './routes/settings.js';
 import botRoutes from './routes/bot.js';
 import purchaseRoutes from './routes/purchases.js';
-import { retryPendingPurchases } from './services/deliveryService.js';
 
 dotenv.config();
 
@@ -149,11 +148,6 @@ const start = async () => {
       console.log(`\n✅ Redline SMP Server running on http://localhost:${PORT}`);
       console.log(`📡 MongoDB connected`);
       console.log(`\n  → Admin panel: http://localhost:5173/adminishere\n`);
-
-      // ─── Retry pending RCON deliveries on a schedule ──────
-      const retryInterval = parseInt(process.env.RCON_RETRY_INTERVAL_MS || '300000', 10); // default 5 min
-      setInterval(() => retryPendingPurchases(), retryInterval);
-      console.log(`🔄 RCON retry scheduler active (every ${retryInterval / 1000}s)`);
     });
   } catch (err) {
     console.error('\n❌ Server failed to start:', err.message);

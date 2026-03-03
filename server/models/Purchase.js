@@ -20,17 +20,16 @@ const purchaseSchema = new mongoose.Schema({
     enum: ['pending', 'delivered', 'failed'],
     default: 'pending',
   },
-  notified: {
-    type: Boolean,
-    default: false,
-  },
-  deliveryMethod: {
-    type: String,
-    enum: ['rcon', null],
-    default: null,
-  },
   deliveredAt: {
     type: Date,
+    default: null,
+  },
+  deliveryAttempts: {
+    type: Number,
+    default: 0,
+  },
+  lastError: {
+    type: String,
     default: null,
   },
 
@@ -46,8 +45,8 @@ const purchaseSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Index for retry queries
+// Indexes
 purchaseSchema.index({ status: 1 });
-purchaseSchema.index({ player: 1, notified: 1 });
+purchaseSchema.index({ player: 1, status: 1 });
 
 export default mongoose.model('Purchase', purchaseSchema);

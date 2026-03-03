@@ -1,8 +1,9 @@
 /**
- * Purchase Routes — endpoints for the in-game plugin to query purchases.
+ * Purchase Routes — plugin-owned delivery endpoints.
  *
- * GET  /api/purchases/unnotified?username=<player>
- * POST /api/purchases/mark-notified
+ * GET  /api/purchases/unnotified?username=<player>   — fetch pending purchases
+ * POST /api/purchases/mark-delivered                 — plugin reports success
+ * POST /api/purchases/mark-failed                    — plugin reports failure
  */
 import { Router } from 'express';
 import crypto from 'crypto';
@@ -10,7 +11,10 @@ import Purchase from '../models/Purchase.js';
 
 const router = Router();
 
-const PLUGIN_SERVER_SECRET = process.env.SERVER_SECRET || '';
+const SERVER_SECRET = process.env.SERVER_SECRET || '';
+
+// Max delivery attempts before a purchase is marked 'failed'
+const DELIVERY_ATTEMPT_THRESHOLD = parseInt(process.env.DELIVERY_ATTEMPT_THRESHOLD || '5', 10);
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -25,19 +29,18 @@ function safeSecretEquals(incoming, expected) {
 }
 
 /**
- * Middleware: verify plugin server secret.
- * The plugin must send x-server-secret header matching PLUGIN_SERVER_SECRET.
+ * Middleware: verify plugin server secret via x-server-secret header.
  */
 function verifyPluginSecret(req, res, next) {
   const secret = req.headers['x-server-secret'];
-  if (!safeSecretEquals(secret, PLUGIN_SERVER_SECRET)) {
+  if (!safeSecretEquals(secret, SERVER_SECRET)) {
     return res.status(403).json({ message: 'Forbidden' });
   }
   next();
 }
 
 // ─── GET /api/purchases/unnotified?username=<player> ─────
-// Returns only delivered but un-notified purchases for a player (oldest first).
+// Returns all pending (undelivered) purchases for a player, oldest first.
 router.get('/unnotified', verifyPluginSecret, async (req, res) => {
   try {
     const username = String(req.query.username || '').trim();
@@ -46,19 +49,19 @@ router.get('/unnotified', verifyPluginSecret, async (req, res) => {
     }
 
     const purchases = await Purchase.find({
-      player: new RegExp(`^${escapeRegex(username)}$`, 'i'), // case-insensitive match
-      status: 'delivered',
-      notified: false,
+      player: new RegExp(`^${escapeRegex(username)}$`, 'i'),
+      status: 'pending',
     })
       .sort({ createdAt: 1 })
-      .select('_id type value')
+      .select('_id type value player')
       .lean();
 
-    // Shape response for the plugin
     const formattedPurchases = purchases.map((p) => {
       const base = {
         purchaseId: p._id.toString(),
+        player: p.player,
         type: p.type,
+        status: 'pending',
       };
       if (p.type === 'rank') {
         base.rank = String(p.value);
@@ -68,19 +71,17 @@ router.get('/unnotified', verifyPluginSecret, async (req, res) => {
       return base;
     });
 
-    res.json({
-      success: true,
-      purchases: formattedPurchases,
-    });
+    res.json({ success: true, purchases: formattedPurchases });
   } catch (err) {
-    console.error('[Purchases] Error fetching unnotified:', err.message);
+    console.error('[Purchases] Error fetching pending:', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// ─── POST /api/purchases/mark-notified ────────────────────
+// ─── POST /api/purchases/mark-delivered ───────────────────
 // Body: { purchaseId: "<id>" }
-router.post('/mark-notified', verifyPluginSecret, async (req, res) => {
+// Plugin calls this after successfully delivering the item in-game.
+router.post('/mark-delivered', verifyPluginSecret, async (req, res) => {
   try {
     const purchaseId = String(req.body?.purchaseId || '').trim();
     if (!purchaseId) {
@@ -88,41 +89,73 @@ router.post('/mark-notified', verifyPluginSecret, async (req, res) => {
     }
 
     const updated = await Purchase.findOneAndUpdate(
-      {
-        _id: purchaseId,
-        status: 'delivered',
-        notified: false,
-      },
-      {
-        $set: {
-          notified: true,
-        },
-      },
+      { _id: purchaseId, status: 'pending' },
+      { $set: { status: 'delivered', deliveredAt: new Date() } },
       { new: true }
     );
 
     if (!updated) {
-      const existing = await Purchase.findById(purchaseId).select('_id status notified');
+      // Check whether it already exists (idempotent) or truly missing
+      const existing = await Purchase.findById(purchaseId).select('_id status').lean();
       if (!existing) {
         return res.status(404).json({ success: false, message: 'Purchase not found' });
       }
-
-      // idempotent success for already-notified delivered purchases
-      if (existing.status === 'delivered' && existing.notified === true) {
-        return res.json({ success: true });
-      }
-
-      // reject premature notify attempts before successful delivery
-      if (existing.status !== 'delivered') {
-        return res.status(400).json({ success: false, message: 'Purchase not delivered yet' });
-      }
-
-      return res.json({ success: true });
+      // Already delivered — idempotent success
+      return res.json({ success: true, alreadyDelivered: true });
     }
 
+    console.log(`[Purchases] ✅ Delivered purchase ${purchaseId} for ${updated.player}`);
     res.json({ success: true });
   } catch (err) {
-    console.error('[Purchases] Error marking notified:', err.message);
+    console.error('[Purchases] Error marking delivered:', err.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ─── POST /api/purchases/mark-failed ──────────────────────
+// Body: { purchaseId: "<id>", error: "<reason>" }
+// Plugin calls this when delivery failed. Increments attempt counter.
+// After DELIVERY_ATTEMPT_THRESHOLD failures, status is set to 'failed'.
+router.post('/mark-failed', verifyPluginSecret, async (req, res) => {
+  try {
+    const purchaseId = String(req.body?.purchaseId || '').trim();
+    const errorMsg = String(req.body?.error || 'Unknown error').trim();
+
+    if (!purchaseId) {
+      return res.status(400).json({ success: false, message: 'purchaseId is required' });
+    }
+
+    // Increment attempts and store last error
+    const updated = await Purchase.findOneAndUpdate(
+      { _id: purchaseId, status: 'pending' },
+      { $inc: { deliveryAttempts: 1 }, $set: { lastError: errorMsg } },
+      { new: true }
+    );
+
+    if (!updated) {
+      const existing = await Purchase.findById(purchaseId).select('_id status').lean();
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Purchase not found' });
+      }
+      // Already delivered or failed — nothing to do
+      return res.json({ success: true, status: existing.status });
+    }
+
+    // Escalate to 'failed' if threshold reached
+    if (updated.deliveryAttempts >= DELIVERY_ATTEMPT_THRESHOLD) {
+      await Purchase.findByIdAndUpdate(purchaseId, { $set: { status: 'failed' } });
+      console.warn(
+        `[Purchases] ❌ Purchase ${purchaseId} for ${updated.player} failed after ${updated.deliveryAttempts} attempt(s). Last error: ${errorMsg}`
+      );
+      return res.json({ success: true, status: 'failed', attempts: updated.deliveryAttempts });
+    }
+
+    console.warn(
+      `[Purchases] ⚠️ Purchase ${purchaseId} for ${updated.player} failed (attempt ${updated.deliveryAttempts}/${DELIVERY_ATTEMPT_THRESHOLD}): ${errorMsg}`
+    );
+    res.json({ success: true, status: 'pending', attempts: updated.deliveryAttempts });
+  } catch (err) {
+    console.error('[Purchases] Error marking failed:', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

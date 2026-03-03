@@ -19,7 +19,7 @@ import ReferralPartner from '../models/ReferralPartner.js';
 import ReferralFraudLog from '../models/ReferralFraudLog.js';
 import { createCashfreeOrder, verifyCashfreeWebhook } from '../services/cashfree.js';
 import { deliverOrder } from '../services/rcon.js';
-import { createPurchases, attemptDelivery } from '../services/deliveryService.js';
+import { createPurchases } from '../services/deliveryService.js';
 
 const router = Router();
 
@@ -351,33 +351,13 @@ router.post('/webhook', async (req, res) => {
 
     console.log(`[Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
 
-    // ── Hybrid delivery: create Purchase records & attempt RCON ──
+    // ── Create Purchase records — plugin will deliver in-game ──
     try {
       const purchases = await createPurchases(order);
-      let allDelivered = true;
-      const deliveryLog = [];
-
-      for (const purchase of purchases) {
-        const { delivered, log } = await attemptDelivery(purchase);
-        deliveryLog.push(...log);
-        if (!delivered) allDelivered = false;
-      }
-
-      order.deliveryStatus = allDelivered ? 'delivered' : 'pending';
-      order.deliveryLog = deliveryLog;
-      order.deliveredAt = allDelivered ? new Date() : undefined;
-      await order.save();
-
-      if (allDelivered) {
-        console.log(`[Webhook] ✅ All purchases delivered for order ${order._id}`);
-      } else {
-        console.warn(`[Webhook] ⚠️ Some purchases pending for order ${order._id} — will retry`);
-      }
+      console.log(`[Webhook] ✅ ${purchases.length} purchase record(s) queued for order ${order._id} — pending plugin delivery`);
     } catch (deliveryErr) {
-      console.error(`[Webhook] Delivery error for order ${order._id}:`, deliveryErr.message);
-      order.deliveryStatus = 'pending';
-      order.deliveryLog = [`[Delivery] ERROR: ${deliveryErr.message}`];
-      await order.save();
+      console.error(`[Webhook] Failed to create purchases for order ${order._id}:`, deliveryErr.message);
+    }
     }
 
     // Update product analytics
@@ -494,33 +474,13 @@ router.post('/cashfree-webhook', async (req, res) => {
 
     console.log(`[Cashfree Webhook] ✅ Order ${order._id} marked as PAID (webhook verified)`);
 
-    // ── Hybrid delivery: create Purchase records & attempt RCON ──
+    // ── Create Purchase records — plugin will deliver in-game ──
     try {
       const purchases = await createPurchases(order);
-      let allDelivered = true;
-      const deliveryLog = [];
-
-      for (const purchase of purchases) {
-        const { delivered, log } = await attemptDelivery(purchase);
-        deliveryLog.push(...log);
-        if (!delivered) allDelivered = false;
-      }
-
-      order.deliveryStatus = allDelivered ? 'delivered' : 'pending';
-      order.deliveryLog = deliveryLog;
-      order.deliveredAt = allDelivered ? new Date() : undefined;
-      await order.save();
-
-      if (allDelivered) {
-        console.log(`[Cashfree Webhook] ✅ All purchases delivered for order ${order._id}`);
-      } else {
-        console.warn(`[Cashfree Webhook] ⚠️ Some purchases pending for order ${order._id} — will retry`);
-      }
+      console.log(`[Cashfree Webhook] ✅ ${purchases.length} purchase record(s) queued for order ${order._id} — pending plugin delivery`);
     } catch (deliveryErr) {
-      console.error(`[Cashfree Webhook] Delivery error for order ${order._id}:`, deliveryErr.message);
-      order.deliveryStatus = 'pending';
-      order.deliveryLog = [`[Delivery] ERROR: ${deliveryErr.message}`];
-      await order.save();
+      console.error(`[Cashfree Webhook] Failed to create purchases for order ${order._id}:`, deliveryErr.message);
+    }
     }
 
     // Update product analytics
