@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { createPaymentOrder, verifyStoreCode } from '../api/index.js';
 
 const CartDrawer = () => {
-  const { items, cartOpen, setCartOpen, removeFromCart, updateQty, subtotal, clearCart } = useCart();
+  const { items, cartOpen, setCartOpen, removeFromCart, updateQty, subtotal, clearCart, limitMsg } = useCart();
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [mcUsername, setMcUsername] = useState(() => localStorage.getItem('mc_username') || '');
   const [email, setEmail] = useState('');
@@ -247,6 +247,13 @@ const CartDrawer = () => {
 
         {/* Items */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4 custom-scrollbar">
+          {/* Quantity limit warning */}
+          {limitMsg && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs rounded-lg px-3 py-2 font-pixel animate-pulse">
+              ⚠ {limitMsg}
+            </div>
+          )}
+
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500">
               <span className="text-4xl mb-4">🛒</span>
@@ -284,7 +291,13 @@ const CartDrawer = () => {
                   <span className="w-7 text-center text-white text-sm font-mono">{item.qty}</span>
                   <button
                     onClick={() => updateQty(item.id, item.qty + 1)}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-white/10 text-gray-300 hover:bg-red-500/20 hover:text-white transition-colors text-sm font-bold"
+                    disabled={item.maxQuantityPerOrder && item.qty >= item.maxQuantityPerOrder}
+                    className={`w-7 h-7 flex items-center justify-center rounded text-sm font-bold transition-colors ${
+                      item.maxQuantityPerOrder && item.qty >= item.maxQuantityPerOrder
+                        ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                        : 'bg-white/10 text-gray-300 hover:bg-red-500/20 hover:text-white'
+                    }`}
+                    title={item.maxQuantityPerOrder && item.qty >= item.maxQuantityPerOrder ? `Max ${item.maxQuantityPerOrder} per order` : ''}
                   >
                     +
                   </button>

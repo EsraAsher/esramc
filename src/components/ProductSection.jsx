@@ -21,6 +21,7 @@ const ProductSection = ({ id, title, slug, products }) => {
             price={product.price}
             features={product.features}
             image={product.image}
+            maxQuantityPerOrder={product.maxQuantityPerOrder}
           />
         ))}
       </div>

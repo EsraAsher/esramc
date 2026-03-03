@@ -17,6 +17,7 @@ const emptyProduct = {
   collection: '',
   isFeatured: false,
   order: 0,
+  maxQuantityPerOrder: '',
 };
 
 const AdminProducts = () => {
@@ -60,6 +61,7 @@ const AdminProducts = () => {
       collection: product.collection?._id || '',
       isFeatured: product.isFeatured,
       order: product.order || 0,
+      maxQuantityPerOrder: product.maxQuantityPerOrder || '',
     });
     setShowForm(true);
     setError('');
@@ -94,6 +96,7 @@ const AdminProducts = () => {
         ...form,
         price: parseFloat(form.price),
         order: parseInt(form.order) || 0,
+        maxQuantityPerOrder: form.maxQuantityPerOrder && parseInt(form.maxQuantityPerOrder) > 0 ? parseInt(form.maxQuantityPerOrder) : null,
         features: form.features.filter((f) => f.trim()),
         commands: form.commands
           .split('\n')
@@ -249,17 +252,30 @@ const AdminProducts = () => {
                   className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-red-500/50"
                 />
               </div>
-              <div className="flex items-end pb-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.isFeatured}
-                    onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                    className="accent-red-500 w-4 h-4"
-                  />
-                  <span className="text-gray-300 text-sm">Featured on homepage</span>
-                </label>
+              <div>
+                <label className="block text-gray-400 text-xs font-pixel mb-2">MAX QTY / ORDER</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={form.maxQuantityPerOrder}
+                  onChange={(e) => setForm({ ...form, maxQuantityPerOrder: e.target.value })}
+                  placeholder="Unlimited"
+                  className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-red-500/50"
+                />
+                <p className="text-[10px] text-gray-500 mt-1">Leave empty for unlimited. Set 1 for ranks.</p>
               </div>
+            </div>
+            <div className="flex items-end pb-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.isFeatured}
+                  onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+                  className="accent-red-500 w-4 h-4"
+                />
+                <span className="text-gray-300 text-sm">Featured on homepage</span>
+              </label>
+            </div>
             </div>
 
             {/* Features */}
@@ -364,6 +380,9 @@ const AdminProducts = () => {
               <h3 className="text-white font-bold text-sm mb-1">{product.title}</h3>
               <p className="text-gray-500 text-xs mb-3">
                 {product.collection?.name || 'No collection'}
+                {product.maxQuantityPerOrder && (
+                  <span className="ml-2 text-yellow-400">Max {product.maxQuantityPerOrder}/order</span>
+                )}
               </p>
 
               <div className="flex gap-2">

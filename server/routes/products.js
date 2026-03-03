@@ -91,7 +91,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/products - create product
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { title, price, image, features, commands, collection, isFeatured, order } = req.body;
+    const { title, price, image, features, commands, collection, isFeatured, order, maxQuantityPerOrder } = req.body;
     
     const col = await Collection.findById(collection);
     if (!col) {
@@ -107,6 +107,7 @@ router.post('/', authMiddleware, async (req, res) => {
       collection,
       isFeatured,
       order,
+      maxQuantityPerOrder: maxQuantityPerOrder && parseInt(maxQuantityPerOrder) > 0 ? parseInt(maxQuantityPerOrder) : null,
     });
 
     const populated = await product.populate('collection', 'name slug');
@@ -119,7 +120,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // PUT /api/products/:id - update product
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { title, price, image, features, commands, collection, isActive, isFeatured, order } = req.body;
+    const { title, price, image, features, commands, collection, isActive, isFeatured, order, maxQuantityPerOrder } = req.body;
     const updateData = {};
 
     if (title !== undefined) updateData.title = title;
@@ -131,6 +132,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (isActive !== undefined) updateData.isActive = isActive;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (order !== undefined) updateData.order = order;
+    if (maxQuantityPerOrder !== undefined) updateData.maxQuantityPerOrder = maxQuantityPerOrder && parseInt(maxQuantityPerOrder) > 0 ? parseInt(maxQuantityPerOrder) : null;
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,

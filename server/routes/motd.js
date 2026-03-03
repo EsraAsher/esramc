@@ -82,6 +82,7 @@ router.get('/', async (req, res) => {
         image: motd.product.image,
         features: motd.product.features,
         collection: motd.product.collection,
+        maxQuantityPerOrder: motd.product.maxQuantityPerOrder || null,
       },
     });
   } catch (err) {

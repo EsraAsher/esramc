@@ -47,6 +47,11 @@ const productSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  maxQuantityPerOrder: {
+    type: Number,
+    default: null,
+    min: 1,
+  },
 }, { timestamps: true, suppressReservedKeysWarning: true });
 
 export default mongoose.model('Product', productSchema);

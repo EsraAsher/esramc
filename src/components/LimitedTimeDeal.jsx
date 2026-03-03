@@ -71,12 +71,14 @@ const LimitedTimeDeal = () => {
 
   const handleAdd = () => {
     if (soldOut || expired) return;
-    addToCart({
+    const ok = addToCart({
       id: product._id,
       title: product.title,
       price: product.price,
       image: product.image,
+      maxQuantityPerOrder: product.maxQuantityPerOrder,
     });
+    if (ok === false) return; // blocked by limit
     setAdded(true);
     setCartOpen(true);
     setTimeout(() => setAdded(false), 800);

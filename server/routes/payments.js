@@ -80,6 +80,17 @@ router.post('/create-order', checkoutLimiter, async (req, res) => {
       return res.status(400).json({ message: 'One or more products are unavailable' });
     }
 
+    // ── Validate per-product quantity limits ──────────────────
+    for (const clientItem of items) {
+      const prod = products.find((p) => p._id.toString() === clientItem.productId);
+      const qty = Math.max(1, parseInt(clientItem.quantity) || 1);
+      if (prod.maxQuantityPerOrder && qty > prod.maxQuantityPerOrder) {
+        return res.status(400).json({
+          message: `You can only purchase ${prod.maxQuantityPerOrder} of "${prod.title}" per order.`,
+        });
+      }
+    }
+
     // Build order items with server-side prices (never trust client prices)
     let total = 0;
     const orderItems = items.map((clientItem) => {

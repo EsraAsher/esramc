@@ -1,12 +1,26 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 
-const ProductCard = ({ id, title, price, features, image }) => {
-  const { addToCart } = useCart();
+const ProductCard = ({ id, title, price, features, image, maxQuantityPerOrder }) => {
+  const { addToCart, items } = useCart();
   const [added, setAdded] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+
+  const cartItem = items.find((i) => i.id === id);
+  const atLimit = maxQuantityPerOrder && cartItem && cartItem.qty >= maxQuantityPerOrder;
 
   const handleAdd = () => {
-    addToCart({ id, title, price, image });
+    if (atLimit) {
+      setBlocked(true);
+      setTimeout(() => setBlocked(false), 1500);
+      return;
+    }
+    const ok = addToCart({ id, title, price, image, maxQuantityPerOrder });
+    if (ok === false) {
+      setBlocked(true);
+      setTimeout(() => setBlocked(false), 1500);
+      return;
+    }
     setAdded(true);
     setTimeout(() => setAdded(false), 800);
   };
@@ -40,13 +54,18 @@ const ProductCard = ({ id, title, price, features, image }) => {
 
         <button
           onClick={handleAdd}
+          disabled={atLimit}
           className={`w-full py-2 sm:py-3 font-pixel text-xs sm:text-sm rounded transition-all duration-300 ${
-            added
+            blocked
+              ? 'bg-yellow-600/20 border border-yellow-500/50 text-yellow-300'
+              : added
               ? 'bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]'
+              : atLimit
+              ? 'bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed'
               : 'bg-red-500/10 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white shadow-[0_0_10px_rgba(255,0,0,0.1)] hover:shadow-[0_0_20px_rgba(255,0,0,0.4)]'
           }`}
         >
-          {added ? '✓ Added!' : 'Add to Cart'}
+          {blocked ? `Max ${maxQuantityPerOrder}/order` : added ? '✓ Added!' : atLimit ? 'Limit Reached' : 'Add to Cart'}
         </button>
       </div>
     </div>
