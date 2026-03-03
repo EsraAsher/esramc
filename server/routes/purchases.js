@@ -131,7 +131,7 @@ router.post('/mark-failed', verifyPluginSecret, async (req, res) => {
       [
         {
           $set: {
-            deliveryAttempts: { $add: ['$deliveryAttempts', 1] },
+            deliveryAttempts: { $add: [{ $ifNull: ['$deliveryAttempts', 0] }, 1] },
             lastError: errorMsg,
           },
         },
