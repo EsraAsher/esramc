@@ -276,7 +276,6 @@ const AdminProducts = () => {
                 <span className="text-gray-300 text-sm">Featured on homepage</span>
               </label>
             </div>
-            </div>
 
             {/* Features */}
             <div>
