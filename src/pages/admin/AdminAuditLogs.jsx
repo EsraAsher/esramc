@@ -87,7 +87,7 @@ export default function AdminAuditLogs() {
       <div>
         <h2 className="font-pixel text-base text-red-400 mb-1">AUDIT LOGS</h2>
         <p className="text-gray-500 text-xs">
-          Immutable record of all admin actions. Logs auto-expire after 365 days. No deletion via web UI.
+          records of all admin here, auto delete in 365 days
         </p>
       </div>
 
