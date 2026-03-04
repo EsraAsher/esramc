@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { fetchAuditLogs } from '../../api/index';
 
 const ACTION_COLORS = {
@@ -169,9 +169,8 @@ export default function AdminAuditLogs() {
                 : null;
 
               return (
-                <>
+                <Fragment key={log._id}>
                   <tr
-                    key={log._id}
                     onClick={() => setExpanded(isOpen ? null : log._id)}
                     className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
                   >
@@ -186,7 +185,7 @@ export default function AdminAuditLogs() {
                         {log.action}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-300 text-xs max-w-[12rem] truncate">
+                    <td className="px-4 py-3 text-gray-300 text-xs max-w-48 truncate">
                       {log.target || <span className="text-gray-600">—</span>}
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs max-w-[16rem] truncate font-mono">
@@ -197,7 +196,7 @@ export default function AdminAuditLogs() {
                     </td>
                   </tr>
                   {isOpen && (
-                    <tr key={`${log._id}-expanded`} className="border-b border-white/5 bg-white/[0.02]">
+                    <tr className="border-b border-white/5 bg-white/2">
                       <td colSpan={5} className="px-4 py-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                           <div>
@@ -228,7 +227,7 @@ export default function AdminAuditLogs() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
           </tbody>
