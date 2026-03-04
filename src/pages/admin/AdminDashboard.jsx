@@ -8,6 +8,7 @@ import AdminVotingLinks from './AdminVotingLinks';
 import AdminReferrals from './AdminReferrals';
 import AdminPayouts from './AdminPayouts';
 import AdminMOTD from './AdminMOTD';
+import AdminAuditLogs from './AdminAuditLogs';
 
 const tabs = [
   { id: 'analytics', label: 'Analytics', icon: '💰' },
@@ -20,9 +21,15 @@ const tabs = [
   { id: 'payouts', label: 'Payouts', icon: '💸' },
 ];
 
+const superadminTabs = [
+  { id: 'logs', label: 'Audit Logs', icon: '📋' },
+];
+
 const AdminDashboard = () => {
   const { admin, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('analytics');
+
+  const visibleTabs = admin?.role === 'superadmin' ? [...tabs, ...superadminTabs] : tabs;
 
   return (
     <main className="relative z-10 pt-20 pb-12 px-4 md:px-6 max-w-7xl mx-auto min-h-screen">
@@ -44,7 +51,7 @@ const AdminDashboard = () => {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -69,6 +76,7 @@ const AdminDashboard = () => {
       {activeTab === 'voting' && <AdminVotingLinks />}
       {activeTab === 'referrals' && <AdminReferrals />}
       {activeTab === 'payouts' && <AdminPayouts />}
+      {activeTab === 'logs' && admin?.role === 'superadmin' && <AdminAuditLogs />}
     </main>
   );
 };

@@ -4,6 +4,7 @@ import ReferralApplication from '../models/ReferralApplication.js';
 import ReferralPartner from '../models/ReferralPartner.js';
 import CommissionAdjustment from '../models/CommissionAdjustment.js';
 import authMiddleware from '../middleware/auth.js';
+import { logAction } from '../utils/auditLogger.js';
 import { sendMail, referralApplicationReceivedHTML, referralApplicationAdminHTML, referralApprovedHTML, referralRejectedHTML } from '../utils/mailer.js';
 import { sendDiscordEvent } from '../utils/discord.js';
 import { generateUniqueCode } from '../utils/referralCode.js';
@@ -239,6 +240,7 @@ router.patch('/admin/:id/approve', authMiddleware, async (req, res) => {
       application,
       partner,
     });
+    logAction(req.admin, 'REFERRAL_APPROVED', application.creatorName, { referralCode: code, discountPercent: partner.discountPercent, commissionPercent: partner.commissionPercent }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Referrals] Approve error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -279,6 +281,7 @@ router.patch('/admin/:id/reject', authMiddleware, async (req, res) => {
     }).catch(() => {});
 
     res.json({ message: 'Application rejected.', application });
+    logAction(req.admin, 'REFERRAL_REJECTED', application.creatorName, {}, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Referrals] Reject error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -312,6 +315,7 @@ router.patch('/admin/partner/:id/update', authMiddleware, async (req, res) => {
 
     await partner.save();
     res.json({ message: 'Partner updated.', partner });
+    logAction(req.admin, 'PARTNER_UPDATED', partner.creatorName, { referralCode: partner.referralCode }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Referrals] Update partner error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -337,6 +341,7 @@ router.patch('/admin/partner/:id/status', authMiddleware, async (req, res) => {
     if (!partner) return res.status(404).json({ message: 'Partner not found.' });
 
     res.json({ message: `Partner status changed to ${status}.`, partner });
+    logAction(req.admin, 'PARTNER_STATUS_CHANGED', partner.creatorName, { status }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Referrals] Status change error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -383,6 +388,7 @@ router.patch('/admin/partner/:id/adjust-commission', authMiddleware, async (req,
       message: `Commission adjusted: ₹${previousBalance} → ₹${partner.pendingCommission}`,
       partner,
     });
+    logAction(req.admin, 'COMMISSION_ADJUSTED', partner.creatorName, { amount: adjustAmount, previousBalance, newBalance: partner.pendingCommission }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Referrals] Adjust commission error:', err);
     res.status(500).json({ message: 'Server error' });

@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import AuditLog from '../models/AuditLog.js';
 import authMiddleware from '../middleware/auth.js';
 import requireRole from '../middleware/requireRole.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 
@@ -212,7 +214,40 @@ router.post('/setup', setupAccessMiddleware, async (req, res) => {
         role: admin.role,
       },
     });
+    logAction(req.admin || admin, 'ADMIN_CREATED', discordId.trim(), { role: normalizedRole, displayName: admin.displayName }, req.ip).catch(() => {});
   } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/admin/audit-logs — superadmin only, read-only, paginated
+router.get('/audit-logs', authMiddleware, requireSuperadmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, action, adminId } = req.query;
+    const filter = {};
+    if (action) filter.action = new RegExp(action, 'i');
+    if (adminId) filter.adminId = adminId;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const clampedLimit = Math.min(parseInt(limit) || 50, 200);
+
+    const [logs, total] = await Promise.all([
+      AuditLog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(clampedLimit)
+        .lean(),
+      AuditLog.countDocuments(filter),
+    ]);
+
+    res.json({
+      logs,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / clampedLimit),
+    });
+  } catch (err) {
+    console.error('[AuditLog] Fetch error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

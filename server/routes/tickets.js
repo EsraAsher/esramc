@@ -1,6 +1,7 @@
 import express from 'express';
 import Ticket from '../models/Ticket.js';
 import authMiddleware from '../middleware/auth.js';
+import { logAction } from '../utils/auditLogger.js';
 import {
   sendMail,
   verifyEmail,
@@ -161,6 +162,7 @@ router.patch('/admin/:id/status', authMiddleware, async (req, res) => {
     }
 
     res.json({ success: true, ticket });
+    logAction(req.admin, 'TICKET_STATUS_CHANGED', `#${ticket._id}`, { status, category: ticket.category, user: ticket.email }, req.ip).catch(() => {});
   } catch (err) {
     console.error('Ticket status update error:', err);
     res.status(500).json({ message: 'Failed to update ticket.' });

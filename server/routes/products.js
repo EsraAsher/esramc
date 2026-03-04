@@ -2,6 +2,7 @@ import { Router } from 'express';
 import Product from '../models/Product.js';
 import Collection from '../models/Collection.js';
 import authMiddleware from '../middleware/auth.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 
@@ -112,6 +113,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const populated = await product.populate('collection', 'name slug');
     res.status(201).json(populated);
+    logAction(req.admin, 'PRODUCT_CREATED', product.title, { price: product.price, collection: populated.collection?.name }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -145,6 +147,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     res.json(product);
+    logAction(req.admin, 'PRODUCT_UPDATED', product.title, { id: product._id }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -158,6 +161,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json({ message: 'Product deleted' });
+    logAction(req.admin, 'PRODUCT_DELETED', product.title, { id: req.params.id }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -176,6 +180,7 @@ router.patch('/:id/toggle', authMiddleware, async (req, res) => {
 
     const populated = await product.populate('collection', 'name slug');
     res.json(populated);
+    logAction(req.admin, 'PRODUCT_TOGGLED', product.title, { isActive: product.isActive }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

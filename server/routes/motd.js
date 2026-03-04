@@ -13,6 +13,7 @@ import { Router } from 'express';
 import MOTD from '../models/MOTD.js';
 import Product from '../models/Product.js';
 import authMiddleware from '../middleware/auth.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 
@@ -166,6 +167,7 @@ router.put('/admin', authMiddleware, async (req, res) => {
 
     const populated = await MOTD.findById(motd._id).populate('product', 'title price image isActive').lean();
     res.json(populated);
+    logAction(req.admin, 'MOTD_UPDATED', 'MOTD', { enabled: motd.enabled, title: motd.title, product: motd.product }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[MOTD] Admin update error:', err.message);
     res.status(500).json({ message: 'Server error' });
@@ -178,6 +180,7 @@ router.post('/admin/reset-stock', authMiddleware, async (req, res) => {
     const motd = await MOTD.findOneAndUpdate({}, { $set: { stockSold: 0 } }, { new: true });
     if (!motd) return res.status(404).json({ message: 'MOTD not found' });
     res.json({ success: true, stockSold: 0 });
+    logAction(req.admin, 'MOTD_STOCK_RESET', 'MOTD', {}, req.ip).catch(() => {});
   } catch (err) {
     console.error('[MOTD] Reset stock error:', err.message);
     res.status(500).json({ message: 'Server error' });

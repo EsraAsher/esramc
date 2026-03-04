@@ -2,6 +2,7 @@ import { Router } from 'express';
 import Collection from '../models/Collection.js';
 import Product from '../models/Product.js';
 import authMiddleware from '../middleware/auth.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 
@@ -58,6 +59,7 @@ router.post('/', authMiddleware, async (req, res) => {
     
     const collection = await Collection.create({ name, slug, description, order });
     res.status(201).json(collection);
+    logAction(req.admin, 'COLLECTION_CREATED', name, { slug }, req.ip).catch(() => {});
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Collection name already exists' });
@@ -90,6 +92,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     res.json(collection);
+    logAction(req.admin, 'COLLECTION_UPDATED', collection.name, { id: req.params.id }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -111,6 +114,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 
     res.json({ message: 'Collection deleted' });
+    logAction(req.admin, 'COLLECTION_DELETED', collection.name, { id: req.params.id }, req.ip).catch(() => {});
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }

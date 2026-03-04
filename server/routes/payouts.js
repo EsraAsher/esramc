@@ -8,6 +8,7 @@ import authMiddleware from '../middleware/auth.js';
 import requireRole from '../middleware/requireRole.js';
 import { sendMail, payoutProcessedHTML, payoutRejectedHTML } from '../utils/mailer.js';
 import { sendDiscordEvent } from '../utils/discord.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 const requireSuperadmin = requireRole('superadmin');
@@ -163,6 +164,7 @@ router.post('/process', authMiddleware, requireSuperadmin, async (req, res) => {
         totalPaidOut: updated.totalPaidOut,
       },
     });
+    logAction(req.admin, 'PAYOUT_PROCESSED', partner.creatorName, { amount: payoutAmount, referralCode: partner.referralCode }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Payouts] Process error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -207,6 +209,7 @@ router.patch('/requests/:id/processing', authMiddleware, requireSuperadmin, asyn
     await pr.save();
 
     res.json({ message: 'Payout request marked as processing.', request: pr });
+    logAction(req.admin, 'PAYOUT_REQUEST_PROCESSING', pr.creatorName, { amount: pr.amount, requestId: pr._id }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Payouts] Mark processing error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -303,6 +306,7 @@ router.patch('/requests/:id/complete', authMiddleware, requireSuperadmin, async 
       request: pr,
       partner: { pendingCommission: updated.pendingCommission, totalPaidOut: updated.totalPaidOut },
     });
+    logAction(req.admin, 'PAYOUT_REQUEST_COMPLETED', pr.creatorName, { amount: pr.amount, transactionId, requestId: pr._id }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Payouts] Complete request error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -354,6 +358,7 @@ router.patch('/requests/:id/reject', authMiddleware, requireSuperadmin, async (r
     }).catch(() => {});
 
     res.json({ message: `Payout request rejected.`, request: pr });
+    logAction(req.admin, 'PAYOUT_REQUEST_REJECTED', pr.creatorName, { amount: pr.amount, reason: pr.rejectionReason, requestId: pr._id }, req.ip).catch(() => {});
   } catch (err) {
     console.error('[Payouts] Reject request error:', err);
     res.status(500).json({ message: 'Server error' });

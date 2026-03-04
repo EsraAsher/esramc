@@ -181,6 +181,10 @@ export const completePayoutRequest = (id, transactionId) =>
 export const rejectPayoutRequest = (id, reason = '') =>
   request(`/payouts/requests/${id}/reject`, { method: 'PATCH', body: JSON.stringify({ reason }) });
 
+// ─── Audit Logs (superadmin only) ────────────────────────
+export const fetchAuditLogs = (params = {}) =>
+  request(`/admin/audit-logs?${new URLSearchParams(params)}`);
+
 // ─── Settings (Admin) ────────────────────────────────────
 export const fetchPublicSettings = () => request('/settings/public');
 export const fetchSettings = () => request('/settings');
