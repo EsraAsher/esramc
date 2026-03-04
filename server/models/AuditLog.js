@@ -18,7 +18,6 @@ const auditLogSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    index: true,
   },
 
   // What it was done to (human-readable label)

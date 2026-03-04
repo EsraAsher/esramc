@@ -153,20 +153,22 @@ app.get('/', (req, res) => {
   res.json({ message: 'Redline SMP API is running', docs: '/api/health' });
 });
 
-// Connect to MongoDB then start server
+// Bind port FIRST so Render's port scanner detects it immediately,
+// then connect to MongoDB in the background.
 const start = async () => {
+  app.listen(PORT, () => {
+    console.log(`\n✅ Redline SMP Server running on http://localhost:${PORT}`);
+    console.log(`  → Admin panel: http://localhost:5173/adminishere\n`);
+  });
+
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI is not set in server/.env');
     }
     await connectDB();
-    app.listen(PORT, () => {
-      console.log(`\n✅ Redline SMP Server running on http://localhost:${PORT}`);
-      console.log(`📡 MongoDB connected`);
-      console.log(`\n  → Admin panel: http://localhost:5173/adminishere\n`);
-    });
+    console.log('📡 MongoDB connected');
   } catch (err) {
-    console.error('\n❌ Server failed to start:', err.message);
+    console.error('\n❌ MongoDB connection failed:', err.message);
     console.error('\nCheck your MONGODB_URI in server/.env');
     process.exit(1);
   }
