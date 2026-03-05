@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { createPaymentOrder, verifyStoreCode } from '../api/index.js';
+import { createPaymentOrder, verifyStoreCode, validateReferralCode } from '../api/index.js';
 
 const getSavedUsername = () =>
   localStorage.getItem('mcUsername') || localStorage.getItem('mc_username') || '';
@@ -22,6 +22,7 @@ const CartDrawer = () => {
   const [codeVerified, setCodeVerified] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
   const [referralCode, setReferralCode] = useState(() => getSavedReferralCode());
+  const [referralInfo, setReferralInfo] = useState({ valid: false, discountPercent: 0, creatorName: '' });
   const [checkoutStep, setCheckoutStep] = useState('cart'); // cart | details | processing | success | error
 
   // When the cart opens, sync username + referral code from localStorage
@@ -37,6 +38,27 @@ const CartDrawer = () => {
       });
     }
   }, [cartOpen]);
+  // Validate referral code (debounced) to show live discount preview
+  useEffect(() => {
+    if (!referralCode.trim()) {
+      setReferralInfo({ valid: false, discountPercent: 0, creatorName: '' });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const result = await validateReferralCode(referralCode.trim());
+        setReferralInfo(
+          result.valid
+            ? { valid: true, discountPercent: result.discountPercent, creatorName: result.creatorName }
+            : { valid: false, discountPercent: 0, creatorName: '' }
+        );
+      } catch {
+        setReferralInfo({ valid: false, discountPercent: 0, creatorName: '' });
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [referralCode]);
+
   const [processing, setProcessing] = useState(false);
   const [orderResult, setOrderResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -235,6 +257,14 @@ const CartDrawer = () => {
     // Reset to cart view after close animation
     setTimeout(resetCheckout, 300);
   };
+
+  // Discount preview derived values
+  const discountAmt = referralInfo.valid && referralCode.trim()
+    ? Math.round(subtotal * (referralInfo.discountPercent / 100) * 100) / 100
+    : 0;
+  const discountedTotal = discountAmt > 0
+    ? Math.max(1, Math.round((subtotal - discountAmt) * 100) / 100)
+    : subtotal;
 
   return (
     <>
@@ -479,11 +509,21 @@ const CartDrawer = () => {
                 }}
                 placeholder="e.g. STEVE10"
                 maxLength={20}
-                className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-red-500 transition-colors font-mono uppercase"
+                className={`w-full bg-black/50 border rounded-lg px-4 py-2.5 text-sm focus:outline-none transition-colors font-mono uppercase ${
+                  referralInfo.valid && referralCode.trim()
+                    ? 'border-green-500/50 text-green-400 focus:border-green-400'
+                    : 'border-white/20 text-white focus:border-red-500'
+                }`}
               />
-              <p className="text-[10px] text-gray-500 mt-1">
-                Got a creator code? Enter it for a discount.
-              </p>
+              {referralInfo.valid && referralCode.trim() ? (
+                <p className="text-[10px] text-green-400 mt-1">
+                  🎉 {referralInfo.discountPercent}% off · {referralInfo.creatorName}
+                </p>
+              ) : (
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Got a creator code? Enter it for a discount.
+                </p>
+              )}
             </div>
 
             {errorMsg && checkoutStep === 'details' && (
@@ -492,7 +532,14 @@ const CartDrawer = () => {
 
             <div className="flex justify-between items-center pt-2">
               <span className="text-gray-400 font-pixel text-xs">Total</span>
-              <span className="text-white font-pixel text-sm">₹{subtotal.toFixed(2)}</span>
+              {discountAmt > 0 ? (
+                <div className="text-right">
+                  <span className="line-through text-gray-500 font-pixel text-xs block">&#x20B9;{subtotal.toFixed(2)}</span>
+                  <span className="text-green-400 font-pixel text-sm drop-shadow-[0_0_6px_rgba(74,222,128,0.4)]">&#x20B9;{discountedTotal.toFixed(2)}</span>
+                </div>
+              ) : (
+                <span className="text-white font-pixel text-sm drop-shadow-[0_0_6px_rgba(255,0,0,0.4)]">&#x20B9;{subtotal.toFixed(2)}</span>
+              )}
             </div>
 
             <button

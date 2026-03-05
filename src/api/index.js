@@ -83,6 +83,9 @@ export const verifyStoreCode = (username, code) =>
     body: JSON.stringify({ username, code }),
   });
 
+export const validateReferralCode = (code) =>
+  request(`/referrals/validate-code/${encodeURIComponent(code)}`);
+
 // ─── Payments (Razorpay) ──────────────────────────────────
 export const createPaymentOrder = (mcUsername, email, items, storeCode, referralCode) =>
   request('/payments/create-order', {

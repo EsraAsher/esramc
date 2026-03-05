@@ -15,6 +15,24 @@ function getAdminActorName(admin) {
   return admin?.displayName || admin?.discordId || admin?.username || 'admin';
 }
 
+// ═══════════════════════════════════════════════════════════
+// PUBLIC — Validate a referral code (read-only, no side effects)
+// GET /api/referrals/validate-code/:code
+// ═══════════════════════════════════════════════════════════
+router.get('/validate-code/:code', async (req, res) => {
+  try {
+    const code = (req.params.code || '').trim().toUpperCase();
+    if (!code || code.length > 30) return res.json({ valid: false });
+    const partner = await ReferralPartner.findOne({ referralCode: code }).lean();
+    if (!partner || partner.status !== 'active') return res.json({ valid: false });
+    if (partner.expiresAt && new Date() > partner.expiresAt) return res.json({ valid: false });
+    if (partner.maxUses !== null && partner.totalUses >= partner.maxUses) return res.json({ valid: false });
+    return res.json({ valid: true, discountPercent: partner.discountPercent, creatorName: partner.creatorName });
+  } catch {
+    return res.json({ valid: false });
+  }
+});
+
 // ─── Rate limiter for applications (S4) ─────────────────
 const applyLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
