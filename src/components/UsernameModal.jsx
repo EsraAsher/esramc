@@ -13,7 +13,7 @@ const UsernameModal = ({ onClose }) => {
   const location = useLocation();
 
   useEffect(() => {
-    const stored = localStorage.getItem('mc_username');
+    const stored = localStorage.getItem('mcUsername') || localStorage.getItem('mc_username');
     if (!stored && isStorePage(location.pathname)) {
       setIsOpen(true);
     }
@@ -31,6 +31,7 @@ const UsernameModal = ({ onClose }) => {
     const err = validate(username);
     if (err) { setError(err); return; }
     localStorage.setItem('mc_username', username.trim());
+    localStorage.setItem('mcUsername', username.trim());
     setIsOpen(false);
     onClose && onClose(username.trim());
   };

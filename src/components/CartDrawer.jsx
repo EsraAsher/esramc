@@ -3,23 +3,38 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { createPaymentOrder, verifyStoreCode } from '../api/index.js';
 
+const getSavedUsername = () =>
+  localStorage.getItem('mcUsername') || localStorage.getItem('mc_username') || '';
+
+const getSavedReferralCode = () => {
+  const fromStorage = localStorage.getItem('referralCode');
+  if (fromStorage) return fromStorage;
+  const fromUrl = new URLSearchParams(window.location.search).get('ref');
+  return fromUrl || '';
+};
+
 const CartDrawer = () => {
   const { items, cartOpen, setCartOpen, removeFromCart, updateQty, subtotal, clearCart, limitMsg } = useCart();
   const [agreedTerms, setAgreedTerms] = useState(false);
-  const [mcUsername, setMcUsername] = useState(() => localStorage.getItem('mc_username') || '');
+  const [mcUsername, setMcUsername] = useState(() => getSavedUsername());
   const [email, setEmail] = useState('');
   const [storeCode, setStoreCode] = useState('');
   const [codeVerified, setCodeVerified] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
-  const [referralCode, setReferralCode] = useState(() => localStorage.getItem('referralCode') || '');
+  const [referralCode, setReferralCode] = useState(() => getSavedReferralCode());
   const [checkoutStep, setCheckoutStep] = useState('cart'); // cart | details | processing | success | error
 
   // When the cart opens, sync username + referral code from localStorage
   // (handles the case where URL-captured referralCode was saved after initial mount)
   useEffect(() => {
     if (cartOpen) {
-      setMcUsername(prev => prev || localStorage.getItem('mc_username') || '');
-      setReferralCode(prev => prev || localStorage.getItem('referralCode') || '');
+      setMcUsername((prev) => prev || getSavedUsername());
+      setReferralCode((prev) => {
+        if (prev) return prev;
+        const saved = getSavedReferralCode();
+        if (saved) localStorage.setItem('referralCode', saved);
+        return saved;
+      });
     }
   }, [cartOpen]);
   const [processing, setProcessing] = useState(false);
@@ -81,6 +96,7 @@ const CartDrawer = () => {
     try {
       // Save username for next visit
       localStorage.setItem('mc_username', mcUsername.trim());
+      localStorage.setItem('mcUsername', mcUsername.trim());
 
       // Create order on backend (includes verified store code + optional referral)
       const orderData = await createPaymentOrder(
@@ -212,7 +228,6 @@ const CartDrawer = () => {
     setProcessing(false);
     setStoreCode('');
     setCodeVerified(false);
-    setReferralCode('');
   };
 
   const handleClose = () => {
@@ -388,7 +403,12 @@ const CartDrawer = () => {
               <input
                 type="text"
                 value={mcUsername}
-                onChange={(e) => setMcUsername(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setMcUsername(next);
+                  localStorage.setItem('mc_username', next);
+                  localStorage.setItem('mcUsername', next);
+                }}
                 placeholder="Steve"
                 className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-red-500 transition-colors font-mono"
                 required
@@ -452,7 +472,11 @@ const CartDrawer = () => {
               <input
                 type="text"
                 value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ''))}
+                onChange={(e) => {
+                  const next = e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+                  setReferralCode(next);
+                  localStorage.setItem('referralCode', next);
+                }}
                 placeholder="e.g. STEVE10"
                 maxLength={20}
                 className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-red-500 transition-colors font-mono uppercase"
