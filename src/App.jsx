@@ -97,6 +97,16 @@ function AdminRoute({ children }) {
 function App() {
   const [username, setUsername] = useState(localStorage.getItem('mc_username') || '');
 
+  // Capture referral code from URL on first load (?ref=CODE)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('referralCode', ref);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

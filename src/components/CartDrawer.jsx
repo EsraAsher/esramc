@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { createPaymentOrder, verifyStoreCode } from '../api/index.js';
@@ -11,8 +11,17 @@ const CartDrawer = () => {
   const [storeCode, setStoreCode] = useState('');
   const [codeVerified, setCodeVerified] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode, setReferralCode] = useState(() => localStorage.getItem('referralCode') || '');
   const [checkoutStep, setCheckoutStep] = useState('cart'); // cart | details | processing | success | error
+
+  // When the cart opens, sync username + referral code from localStorage
+  // (handles the case where URL-captured referralCode was saved after initial mount)
+  useEffect(() => {
+    if (cartOpen) {
+      setMcUsername(prev => prev || localStorage.getItem('mc_username') || '');
+      setReferralCode(prev => prev || localStorage.getItem('referralCode') || '');
+    }
+  }, [cartOpen]);
   const [processing, setProcessing] = useState(false);
   const [orderResult, setOrderResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
