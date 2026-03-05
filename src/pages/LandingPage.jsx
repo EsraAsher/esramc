@@ -68,7 +68,7 @@ const LandingPage = () => {
               </div>
 
               <a
-                href="https://discord.gg/wBNMMj2PE4"
+                href="https://discord.gg/3WpzvrKRQm"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
@@ -88,7 +88,7 @@ const LandingPage = () => {
 
           {/* Right Widget - Discord */}
           <a
-            href="https://discord.gg/wBNMMj2PE4"
+            href="https://discord.gg/3WpzvrKRQm"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden lg:flex items-center gap-3 transition-transform duration-300 hover:scale-105 absolute right-[8%] xl:right-[12%]"
