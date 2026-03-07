@@ -94,8 +94,12 @@ router.get('/revenue', async (req, res) => {
 
     const matchStage = {
       $match: {
-        paymentStatus: 'paid',
-        webhookVerified: true,
+        $or: [
+          // Gateway orders must remain webhook-verified.
+          { paymentStatus: 'paid', webhookVerified: true },
+          // Manual orders are recorded directly by admins.
+          { manualOrder: true, paymentStatus: 'manual', status: { $in: ['paid', 'delivered'] } },
+        ],
       },
     };
 
@@ -147,11 +151,13 @@ router.get('/revenue', async (req, res) => {
 router.get('/sales', async (req, res) => {
   try {
     const orders = await Order.find({
-      paymentStatus: 'paid',
-      webhookVerified: true,
+      $or: [
+        { paymentStatus: 'paid', webhookVerified: true },
+        { manualOrder: true, paymentStatus: 'manual', status: { $in: ['paid', 'delivered'] } },
+      ],
     })
       .sort({ paidAt: -1 })
-      .select('mcUsername email items total paidAt deliveryStatus')
+      .select('mcUsername email items total paidAt deliveryStatus manualOrder manualPaymentMethod')
       .lean();
 
     const logs = orders.map((o) => ({
@@ -162,6 +168,8 @@ router.get('/sales', async (req, res) => {
       total: o.total,
       paidAt: o.paidAt,
       deliveryStatus: o.deliveryStatus,
+      manualOrder: Boolean(o.manualOrder),
+      paymentMethod: o.manualOrder ? (o.manualPaymentMethod || 'Other') : 'Gateway',
     }));
 
     res.json(logs);
