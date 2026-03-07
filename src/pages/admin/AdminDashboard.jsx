@@ -9,6 +9,7 @@ import AdminReferrals from './AdminReferrals';
 import AdminPayouts from './AdminPayouts';
 import AdminMOTD from './AdminMOTD';
 import AdminAuditLogs from './AdminAuditLogs';
+import AdminManualOrders from './AdminManualOrders';
 
 const tabs = [
   { id: 'analytics', label: 'Analytics', icon: '💰' },
@@ -19,6 +20,7 @@ const tabs = [
   { id: 'voting', label: 'Voting Links', icon: '🗳️' },
   { id: 'referrals', label: 'Referrals', icon: '🤝' },
   { id: 'payouts', label: 'Payouts', icon: '💸' },
+  { id: 'manual-orders', label: 'Manual Orders', icon: '📝' },
 ];
 
 const superadminTabs = [
@@ -76,6 +78,7 @@ const AdminDashboard = () => {
       {activeTab === 'voting' && <AdminVotingLinks />}
       {activeTab === 'referrals' && <AdminReferrals />}
       {activeTab === 'payouts' && <AdminPayouts />}
+      {activeTab === 'manual-orders' && <AdminManualOrders />}
       {activeTab === 'logs' && admin?.role === 'superadmin' && <AdminAuditLogs />}
     </main>
   );

@@ -2,6 +2,8 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
 import AuditLog from '../models/AuditLog.js';
+import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 import authMiddleware from '../middleware/auth.js';
 import requireRole from '../middleware/requireRole.js';
 import { logAction } from '../utils/auditLogger.js';
@@ -248,6 +250,108 @@ router.get('/audit-logs', authMiddleware, requireSuperadmin, async (req, res) =>
     });
   } catch (err) {
     console.error('[AuditLog] Fetch error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ─── Manual Orders ────────────────────────────────────────
+
+// POST /api/admin/manual-orders — create a manual order
+router.post('/manual-orders', authMiddleware, async (req, res) => {
+  try {
+    const { mcUsername, items, total, paymentMethod, note } = req.body;
+
+    if (!mcUsername?.trim()) {
+      return res.status(400).json({ message: 'Minecraft username is required' });
+    }
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'At least one item is required' });
+    }
+    if (typeof total !== 'number' || total < 0) {
+      return res.status(400).json({ message: 'Valid total amount is required' });
+    }
+
+    const allowedMethods = ['UPI', 'Cash', 'Other'];
+    if (paymentMethod && !allowedMethods.includes(paymentMethod)) {
+      return res.status(400).json({ message: 'Invalid payment method' });
+    }
+
+    // Validate and resolve product references
+    const orderItems = [];
+    for (const item of items) {
+      if (!item.product || !item.quantity || item.quantity < 1) {
+        return res.status(400).json({ message: 'Each item must have a product and quantity >= 1' });
+      }
+      const product = await Product.findById(item.product).lean();
+      if (!product) {
+        return res.status(400).json({ message: `Product not found: ${item.product}` });
+      }
+      orderItems.push({
+        product: product._id,
+        title: product.title,
+        price: item.price ?? product.price,
+        quantity: item.quantity,
+        commands: [],
+      });
+    }
+
+    const order = await Order.create({
+      mcUsername: mcUsername.trim(),
+      items: orderItems,
+      total,
+      currency: 'INR',
+      provider: 'manual',
+      status: 'paid',
+      paymentStatus: 'manual',
+      deliveryStatus: 'skipped',
+      manualOrder: true,
+      manualPaymentMethod: paymentMethod || 'Other',
+      manualNote: (note || '').slice(0, 500),
+      createdBy: req.admin._id,
+      paidAt: new Date(),
+    });
+
+    logAction(req.admin, 'MANUAL_ORDER_CREATED', order._id.toString(), {
+      mcUsername: mcUsername.trim(),
+      total,
+      paymentMethod: paymentMethod || 'Other',
+      itemCount: orderItems.length,
+    }, req.ip).catch(() => {});
+
+    res.status(201).json(order);
+  } catch (err) {
+    console.error('[ManualOrder] Create error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/admin/manual-orders — list manual orders
+router.get('/manual-orders', authMiddleware, async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const clampedLimit = Math.min(parseInt(limit) || 50, 200);
+
+    const filter = { manualOrder: true };
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(clampedLimit)
+        .populate('createdBy', 'displayName discordId')
+        .lean(),
+      Order.countDocuments(filter),
+    ]);
+
+    res.json({
+      orders,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / clampedLimit),
+    });
+  } catch (err) {
+    console.error('[ManualOrder] List error:', err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });

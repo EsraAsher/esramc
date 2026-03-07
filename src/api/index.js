@@ -188,6 +188,13 @@ export const rejectPayoutRequest = (id, reason = '') =>
 export const fetchAuditLogs = (params = {}) =>
   request(`/admin/audit-logs?${new URLSearchParams(params)}`);
 
+// ─── Manual Orders (Admin) ───────────────────────────────
+export const createManualOrder = (data) =>
+  request('/admin/manual-orders', { method: 'POST', body: JSON.stringify(data) });
+
+export const fetchManualOrders = (params = {}) =>
+  request(`/admin/manual-orders?${new URLSearchParams(params)}`);
+
 // ─── Settings (Admin) ────────────────────────────────────
 export const fetchPublicSettings = () => request('/settings/public');
 export const fetchSettings = () => request('/settings');

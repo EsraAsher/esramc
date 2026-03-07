@@ -44,7 +44,7 @@ const orderSchema = new mongoose.Schema({
   // ─── Payment Provider ──────────────────────
   provider: {
     type: String,
-    enum: ['razorpay', 'cashfree'],
+    enum: ['razorpay', 'cashfree', 'manual'],
     default: 'razorpay',
   },
 
@@ -72,7 +72,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['created', 'attempted', 'paid', 'failed'],
+    enum: ['created', 'attempted', 'paid', 'failed', 'manual'],
     default: 'created',
   },
   deliveryStatus: {
@@ -103,6 +103,26 @@ const orderSchema = new mongoose.Schema({
   referralTracked: {
     type: Boolean,
     default: false,
+  },
+
+  // ─── Manual Order ─────────────────────────
+  manualOrder: {
+    type: Boolean,
+    default: false,
+  },
+  manualPaymentMethod: {
+    type: String,
+    enum: ['UPI', 'Cash', 'Other', null],
+    default: null,
+  },
+  manualNote: {
+    type: String,
+    default: '',
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    default: null,
   },
 
   // ─── Metadata ─────────────────────────────
