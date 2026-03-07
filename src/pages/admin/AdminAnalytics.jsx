@@ -8,6 +8,13 @@ const deliveryColors = {
   skipped: 'bg-gray-500/20 text-gray-400',
 };
 
+const deliveryLabels = {
+  pending: 'PENDING',
+  delivered: 'DELIVERED',
+  failed: 'FAILED',
+  skipped: 'OP DELIVERED',
+};
+
 const AdminAnalytics = () => {
   const [revenue, setRevenue] = useState(null);
   const [sales, setSales] = useState([]);
@@ -154,7 +161,7 @@ const AdminAnalytics = () => {
                           deliveryColors[order.deliveryStatus] || 'bg-gray-500/20 text-gray-400'
                         }`}
                       >
-                        {(order.deliveryStatus || 'unknown').toUpperCase()}
+                        {deliveryLabels[order.deliveryStatus] || (order.deliveryStatus || 'unknown').toUpperCase()}
                       </span>
                     </td>
                   </tr>

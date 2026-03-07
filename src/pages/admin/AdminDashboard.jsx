@@ -13,6 +13,7 @@ import AdminManualOrders from './AdminManualOrders';
 
 const tabs = [
   { id: 'analytics', label: 'Analytics', icon: '💰' },
+  { id: 'manual-orders', label: 'Manual Orders', icon: '📝' },
   { id: 'motd', label: 'MOTD', icon: '🔥' },
   { id: 'products', label: 'Products', icon: '📦' },
   { id: 'collections', label: 'Collections', icon: '🗂️' },
@@ -20,7 +21,6 @@ const tabs = [
   { id: 'voting', label: 'Voting Links', icon: '🗳️' },
   { id: 'referrals', label: 'Referrals', icon: '🤝' },
   { id: 'payouts', label: 'Payouts', icon: '💸' },
-  { id: 'manual-orders', label: 'Manual Orders', icon: '📝' },
 ];
 
 const superadminTabs = [
