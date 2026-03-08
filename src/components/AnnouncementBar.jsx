@@ -33,7 +33,7 @@ const AnnouncementBar = () => {
 
   return (
     <div
-      className="relative w-full z-50 text-sm font-medium overflow-hidden"
+      className="relative mt-16 sm:mt-20 md:mt-24 w-full z-10 text-sm font-medium overflow-hidden rounded-md"
       style={{ backgroundColor: data.bgColor }}
     >
       <div className="flex items-center justify-center px-8 py-2">

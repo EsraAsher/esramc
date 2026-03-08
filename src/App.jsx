@@ -47,6 +47,7 @@ function StorePage() {
 
   return (
     <main className="relative z-10 w-full">
+      <AnnouncementBar />
       <div className="space-y-6 sm:space-y-8 md:space-y-10 pb-12 sm:pb-20 pt-24 sm:pt-28">
         {/* Limited Time Deal / MOTD Section */}
         <LimitedTimeDeal />
@@ -116,7 +117,6 @@ function App() {
         <CreatorAuthProvider>
           <CartProvider>
             <div className="min-h-screen text-white font-sans selection:bg-neon-purple selection:text-white overflow-x-hidden">
-              <AnnouncementBar />
               <Particles />
               <Navbar username={username} />
 
