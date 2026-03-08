@@ -20,6 +20,7 @@ import settingsRoutes from './routes/settings.js';
 import botRoutes from './routes/bot.js';
 import purchaseRoutes from './routes/purchases.js';
 import motdRoutes from './routes/motd.js';
+import announcementRoutes from './routes/announcement.js';
 
 dotenv.config();
 
@@ -142,6 +143,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/motd', motdRoutes);
+app.use('/api/announcement', announcementRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -239,6 +239,12 @@ export const submitCreatorPayoutRequest = (data) =>
 export const fetchCreatorPayoutStatus = () =>
   creatorRequest('/creator/me/payout-request');
 
+// ─── Announcement Bar ─────────────────────────────────────
+export const fetchAnnouncement = () => request('/announcement');
+export const fetchAdminAnnouncement = () => request('/announcement/admin');
+export const updateAdminAnnouncement = (data) =>
+  request('/announcement/admin', { method: 'PUT', body: JSON.stringify(data) });
+
 // ─── MOTD (Limited Time Deal) ─────────────────────────────
 export const fetchActiveMOTD = () => request('/motd');
 export const fetchAdminMOTD = () => request('/motd/admin');

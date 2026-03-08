@@ -24,6 +24,7 @@ import CreatorCallbackPage from './pages/CreatorCallbackPage';
 import CreatorDashboardPage from './pages/CreatorDashboardPage';
 import CreatorProgramPage from './pages/CreatorProgramPage';
 import LimitedTimeDeal from './components/LimitedTimeDeal';
+import AnnouncementBar from './components/AnnouncementBar';
 
 function StorePage() {
   const [sections, setSections] = useState([]);
@@ -115,6 +116,7 @@ function App() {
         <CreatorAuthProvider>
           <CartProvider>
             <div className="min-h-screen text-white font-sans selection:bg-neon-purple selection:text-white overflow-x-hidden">
+              <AnnouncementBar />
               <Particles />
               <Navbar username={username} />
 

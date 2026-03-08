@@ -10,10 +10,12 @@ import AdminPayouts from './AdminPayouts';
 import AdminMOTD from './AdminMOTD';
 import AdminAuditLogs from './AdminAuditLogs';
 import AdminManualOrders from './AdminManualOrders';
+import AdminAnnouncementBar from './AdminAnnouncementBar';
 
 const tabs = [
   { id: 'analytics', label: 'Analytics', icon: '💰' },
   { id: 'manual-orders', label: 'Manual Orders', icon: '📝' },
+  { id: 'announcement', label: 'Announcement', icon: '📢' },
   { id: 'motd', label: 'MOTD', icon: '🔥' },
   { id: 'products', label: 'Products', icon: '📦' },
   { id: 'collections', label: 'Collections', icon: '🗂️' },
@@ -71,6 +73,7 @@ const AdminDashboard = () => {
 
       {/* Tab Content */}
       {activeTab === 'analytics' && <AdminAnalytics />}
+      {activeTab === 'announcement' && <AdminAnnouncementBar />}
       {activeTab === 'motd' && <AdminMOTD />}
       {activeTab === 'products' && <AdminProducts />}
       {activeTab === 'collections' && <AdminCollections />}
