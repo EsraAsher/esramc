@@ -11,12 +11,19 @@ const NewsPost = ({ news, isPreview = true }) => {
   });
 
   const contentToShow = isPreview ? summary : content;
+  const previewText = String(contentToShow || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
   return (
-    <div className="bg-dark-surface border border-white/10 rounded-xl shadow-lg w-full max-w-275 mx-auto overflow-hidden">
-      <div className="p-6 md:p-8">
-        <div className="flex flex-col md:flex-row justify-between md:items-start mb-4">
-          <h2 className="font-pixel text-2xl md:text-3xl text-white mb-2 md:mb-0">{title}</h2>
+    <div
+      className={`bg-dark-blue border border-white/10 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.28)] w-full max-w-275 mx-auto overflow-hidden ${
+        isPreview ? 'min-h-30 max-h-55' : ''
+      }`}
+    >
+      <div className={`p-4 md:p-5 ${isPreview ? 'h-full flex flex-col' : ''}`}>
+        <div className="flex flex-col md:flex-row justify-between md:items-start gap-2 md:gap-4 mb-3">
+          <h2 className={`font-pixel text-white mb-0 ${isPreview ? 'text-lg md:text-xl' : 'text-2xl md:text-3xl'}`}>
+            {title}
+          </h2>
           <div className="flex items-center gap-3 mt-2 md:mt-0 shrink-0">
             <div className="text-right">
               <p className="text-sky-400 font-pixel text-sm">{author}</p>
@@ -31,15 +38,21 @@ const NewsPost = ({ news, isPreview = true }) => {
           </div>
         </div>
 
-        <hr className="border-white/10 my-4" />
+        <hr className="border-white/10 my-3" />
 
-        <div 
-          className="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: contentToShow }}
-        />
+        {isPreview ? (
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed line-clamp-2">
+            {previewText}
+          </p>
+        ) : (
+          <div
+            className="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: contentToShow }}
+          />
+        )}
 
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className={`flex items-center justify-between gap-3 mt-3 pt-3 border-t border-white/10 ${isPreview ? 'mt-auto' : ''}`}>
+          <div className="flex items-center gap-3 text-sm text-gray-500">
             {typeof views !== 'undefined' && (
               <div className="flex items-center gap-1.5">
                 <Eye size={16} />
@@ -57,7 +70,7 @@ const NewsPost = ({ news, isPreview = true }) => {
           {isPreview && slug && (
             <Link
               to={`/news/${slug}`}
-              className="px-4 py-2 bg-sky-blue/10 hover:bg-sky-blue/20 text-sky-blue text-xs font-pixel rounded transition-colors border border-sky-blue/20 hover:border-sky-blue/50"
+              className="px-4 py-2 bg-sky-blue/10 hover:bg-sky-blue/20 text-sky-blue text-xs font-pixel rounded transition-colors border border-sky-blue/20 hover:border-sky-blue/50 whitespace-nowrap"
             >
               Read Full Post
             </Link>
