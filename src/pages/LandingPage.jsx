@@ -118,15 +118,8 @@ const LandingPage = () => {
 
 
       {/* ═══════════════════ LATEST NEWS ═══════════════════ */}
-      <section className="py-16 px-4 border-t border-white/10">
+      <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-pixel text-lg sm:text-xl text-sky-blue mb-4">Latest Updates</h2>
-            <p className="text-gray-400 text-sm max-w-lg mx-auto">
-              Stay updated with the latest server announcements and community updates.
-            </p>
-          </div>
-
           {latestNews ? (
             <div className="flex justify-center">
               <NewsPost news={latestNews} />

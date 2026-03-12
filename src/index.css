@@ -9,7 +9,7 @@
   --color-light-blue: #6BC6F5;
   --color-pink-accent: #FF6BD6;
   --color-dark-blue: #0F1C2E;
-  --font-pixel: "Sora", sans-serif;
+  --font-pixel: "Montserrat", sans-serif;
 }
 
 @layer utilities {
@@ -26,7 +26,8 @@
   }
   
   .font-pixel {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
     letter-spacing: 0;
   }
 
@@ -79,22 +80,36 @@ body {
   position: relative;
   background-color: #0F1C2E;
   color: #ffffff;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Sora', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
 }
 
-nav a,
-nav button,
+p,
+span,
+li,
+small,
+a,
 button,
 label,
 input,
 select,
 textarea {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
+}
+
+.subheading,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
 }
 
 body::before {

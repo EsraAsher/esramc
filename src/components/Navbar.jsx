@@ -195,12 +195,16 @@ const Navbar = ({ username }) => {
   return (
     <nav className={`${isHomepage ? 'absolute' : 'fixed'} w-full z-40 top-0 left-0 p-3 sm:p-4 md:p-6 transition-all duration-300 ${scrolled ? 'bg-dark-bg/70 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.5)]' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link
-          to="/"
-          className="font-pixel text-xs text-gray-300 hover:text-sky-blue transition-colors"
-        >
-          HOME
-        </Link>
+        {isHomepage ? (
+          <div className="w-12" aria-hidden="true" />
+        ) : (
+          <Link
+            to="/"
+            className="font-pixel text-xs text-gray-300 hover:text-sky-blue transition-colors"
+          >
+            HOME
+          </Link>
+        )}
 
         <div className="hidden md:flex gap-8 font-pixel text-xs text-gray-300 items-center">
           <Link to="/vote" className="hover:text-sky-blue transition-colors">VOTE</Link>
