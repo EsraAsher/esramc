@@ -69,7 +69,7 @@ router.get('/admin/all', authMiddleware, async (req, res) => {
 // ─── Admin: Create News ────────────────────────────
 router.post('/', authMiddleware, async (req, res) => {
   // Check if user is admin
-  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.admin.role !== 'admin' && req.admin.role !== 'superadmin') {
       return res.status(403).json({ message: 'Access denied' });
   }
 
@@ -100,7 +100,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
     await news.save();
 
-    await logAction(req.user, 'NEWS_CREATE', news.title, { newsId: news._id });
+    await logAction(req.admin, 'NEWS_CREATE', news.title, { newsId: news._id });
 
     res.status(201).json(news);
   } catch (err) {
@@ -111,7 +111,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 // ─── Admin: Update News ────────────────────────────
 router.put('/:id', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.admin.role !== 'admin' && req.admin.role !== 'superadmin') {
       return res.status(403).json({ message: 'Access denied' });
   }
 
@@ -140,7 +140,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     await news.save();
 
-    await logAction(req.user, 'NEWS_UPDATE', news.title, { newsId: news._id });
+    await logAction(req.admin, 'NEWS_UPDATE', news.title, { newsId: news._id });
 
     res.json(news);
   } catch (err) {
@@ -151,7 +151,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
 // ─── Admin: Delete News ────────────────────────────
 router.delete('/:id', authMiddleware, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+  if (req.admin.role !== 'admin' && req.admin.role !== 'superadmin') {
       return res.status(403).json({ message: 'Access denied' });
   }
 
@@ -163,7 +163,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'News not found' });
     }
 
-    await logAction(req.user, 'NEWS_DELETE', news.title, { newsId: id });
+    await logAction(req.admin, 'NEWS_DELETE', news.title, { newsId: id });
 
     res.json({ message: 'News deleted successfully' });
   } catch (err) {
