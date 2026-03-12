@@ -116,6 +116,51 @@ const LandingPage = () => {
         </div>
       </div>
 
+      {/* ═══════════════════ ANNOUNCEMENT BANNER ═══════════════════ */}
+      <section className="px-4">
+        <div className="max-w-300 mx-auto">
+          <div
+            className="w-full px-5 md:px-6 py-5 md:py-6"
+            style={{ backgroundColor: '#0f1c2e', borderRadius: '10px' }}
+          >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 md:gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                <img
+                  src="https://mc-heads.net/avatar/eas3r"
+                  alt="psd1"
+                  className="w-14 h-14 rounded-md shrink-0"
+                />
+                <div>
+                  <h2 className="font-pixel text-white text-lg md:text-xl mb-1">
+                    Welcome to EsraMC Official Website!
+                  </h2>
+                  <p className="text-gray-300 text-sm md:text-base">
+                    Join our community and start your SMP adventure today.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <a
+                  href="https://discord.gg/xur9BYghZu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto text-center px-6 py-3 bg-sky-blue/10 border border-sky-blue/30 text-sky-blue font-pixel text-sm rounded hover:bg-sky-blue/20 hover:border-sky-blue/60 transition-all duration-300"
+                >
+                  Join Discord
+                </a>
+                <Link
+                  to="/store"
+                  className="w-full sm:w-auto text-center px-6 py-3 bg-linear-to-r from-sky-blue to-light-blue text-white font-pixel text-sm rounded hover:scale-105 shadow-[0_0_20px_rgba(58,167,227,0.25)] hover:shadow-[0_0_30px_rgba(58,167,227,0.45)] transition-all duration-300"
+                >
+                  Visit Store
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* ═══════════════════ LATEST NEWS ═══════════════════ */}
       <section className="py-16 px-4">
