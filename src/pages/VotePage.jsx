@@ -29,7 +29,7 @@ const VotePage = () => {
       {/* Header */}
       <div className="mb-10">
         <h1 className="font-pixel text-xl sm:text-3xl text-red-400 drop-shadow-[0_0_12px_rgba(255,0,0,0.5)] mb-3">
-          VOTE FOR REDLINE SMP
+          VOTE FOR ESRAMC
         </h1>
         <p className="text-gray-400 text-sm max-w-xl">
           Vote on the sites below to help us grow and earn in-game rewards automatically.
@@ -83,7 +83,7 @@ const VotePage = () => {
               </div>
 
               <p className="text-gray-400 text-sm leading-relaxed flex-1 mb-5">
-                {site.description || 'Vote for Redline SMP and earn in-game rewards!'}
+                {site.description || 'Vote for EsraMC and earn in-game rewards!'}
               </p>
 
               <a

@@ -8,7 +8,7 @@ export async function generateUniqueCode(baseName) {
   const prefix = baseName
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 6) || 'REDLINE';
+    .slice(0, 6) || 'ESRAMC';
 
   for (let attempt = 0; attempt < 10; attempt++) {
     const suffix = Math.random().toString(36).substring(2, 5).toUpperCase();

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: redline-smp-api
+    name: esramc-api
     env: node
     region: singapore   # closest to India — change to oregon/frankfurt if needed
     plan: free

@@ -18,18 +18,18 @@ const NewsCard = ({ news }) => {
             alt={title} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-surface to-transparent opacity-60"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-dark-surface to-transparent opacity-60"></div>
         </div>
       )}
 
-      <div className="p-6 flex flex-col flex-grow relative">
+      <div className="p-6 flex flex-col grow relative">
         {/* Title */}
         <h3 className="font-pixel text-lg md:text-xl text-white mb-3 group-hover:text-sky-blue transition-colors">
           {title}
         </h3>
         
         {/* Short Description */}
-        <p className="text-gray-400 text-sm mb-6 flex-grow leading-relaxed">
+        <p className="text-gray-400 text-sm mb-6 grow leading-relaxed">
           {summary}
         </p>
         

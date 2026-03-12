@@ -137,7 +137,7 @@ router.post('/process', authMiddleware, requireSuperadmin, async (req, res) => {
     if (creatorEmail) {
       sendMail({
         to: creatorEmail,
-        subject: '💸 Payout Processed — Redline SMP',
+        subject: '💸 Payout Processed — EsraMC',
         html: payoutProcessedHTML({
           creatorName: partner.creatorName,
           amount: payoutAmount,
@@ -282,7 +282,7 @@ router.patch('/requests/:id/complete', authMiddleware, requireSuperadmin, async 
     if (creatorEmail) {
       sendMail({
         to: creatorEmail,
-        subject: '💸 Payout Processed — Redline SMP',
+        subject: '💸 Payout Processed — EsraMC',
         html: payoutProcessedHTML({
           creatorName: partner.creatorName,
           amount: pr.amount,
@@ -339,7 +339,7 @@ router.patch('/requests/:id/reject', authMiddleware, requireSuperadmin, async (r
       if (app?.email) {
         sendMail({
           to: app.email,
-          subject: '❌ Payout Request Rejected — Redline SMP',
+          subject: '❌ Payout Request Rejected — EsraMC',
           html: payoutRejectedHTML({
             creatorName: pr.creatorName,
             amount: pr.amount,

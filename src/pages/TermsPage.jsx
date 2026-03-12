@@ -28,7 +28,7 @@ const TermsPage = () => {
         <section>
           <h2 className="font-pixel text-xs text-red-400 mb-3">1. ACCEPTANCE OF TERMS</h2>
           <p>
-            By accessing and using the Redline SMP store ("Service"), you agree to be bound by these
+            By accessing and using the EsraMC store ("Service"), you agree to be bound by these
             Terms &amp; Conditions. If you do not agree to all terms, do not use the Service. Your
             continued use of the Service constitutes acceptance of any changes or updates to these terms.
           </p>
@@ -63,10 +63,10 @@ const TermsPage = () => {
         <section>
           <h2 className="font-pixel text-xs text-red-400 mb-3">4. DIGITAL ITEMS</h2>
           <ul className="list-disc list-inside space-y-2 text-gray-400">
-            <li>Purchased items are virtual goods for use within the Redline SMP Minecraft server only.</li>
+            <li>Purchased items are virtual goods for use within the EsraMC Minecraft server only.</li>
             <li>Items have no real-world monetary value and cannot be transferred, traded, or resold.</li>
             <li>We reserve the right to modify, balance, or remove items for gameplay integrity.</li>
-            <li>Access to purchased items requires an active account on the Redline SMP server.</li>
+            <li>Access to purchased items requires an active account on the EsraMC server.</li>
           </ul>
         </section>
 
@@ -74,7 +74,7 @@ const TermsPage = () => {
         <section>
           <h2 className="font-pixel text-xs text-red-400 mb-3">5. ACCOUNT RESPONSIBILITY</h2>
           <p>
-            You are responsible for maintaining the security of your Minecraft account. Redline SMP is
+            You are responsible for maintaining the security of your Minecraft account. EsraMC is
             not liable for any loss arising from unauthorized access to your account. Ensure you enter
             the correct Minecraft username during checkout — items delivered to the wrong account due to
             user error cannot be recovered.
@@ -85,7 +85,7 @@ const TermsPage = () => {
         <section>
           <h2 className="font-pixel text-xs text-red-400 mb-3">6. SERVER RULES &amp; BANS</h2>
           <p>
-            If your account is banned from the Redline SMP server for violating server rules, you will
+            If your account is banned from the EsraMC server for violating server rules, you will
             lose access to all purchased items. No refunds will be issued for bans resulting from rule
             violations. Server rules are available in our Discord and in-game.
           </p>
@@ -116,9 +116,9 @@ const TermsPage = () => {
         <section>
           <h2 className="font-pixel text-xs text-red-400 mb-3">9. DISCLAIMER</h2>
           <p>
-            Redline SMP is not affiliated with, endorsed by, or associated with Mojang AB, Microsoft
+            EsraMC is not affiliated with, endorsed by, or associated with Mojang AB, Microsoft
             Corporation, or any of their subsidiaries. "Minecraft" is a trademark of Mojang AB.
-            All purchases support the independent Redline SMP community server.
+            All purchases support the independent EsraMC community server.
           </p>
         </section>
 
@@ -148,7 +148,7 @@ const TermsPage = () => {
       {/* Footer */}
       <div className="mt-12 pt-8 border-t border-white/10 text-center">
         <p className="text-gray-500 text-xs">
-          &copy; 2026 Redline SMP. All rights reserved.
+          &copy; 2026 EsraMC. All rights reserved.
         </p>
       </div>
     </main>

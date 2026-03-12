@@ -12,7 +12,7 @@ import {
 } from '../utils/mailer.js';
 
 const router = express.Router();
-const ADMIN_EMAIL = 'tickets.redlinesmp@gmail.com';
+const ADMIN_EMAIL = 'tickets.esramc@gmail.com';
 
 // ─── Helper: truncate for preview ─────────────────────────
 function preview(text, len = 120) {
@@ -89,7 +89,7 @@ router.get('/admin/test-smtp', async (req, res) => {
     // Step 2: Send a real test email to admin
     const ok = await sendMail({
       to: ADMIN_EMAIL,
-      subject: 'Email Test — Redline SMP',
+      subject: 'Email Test — EsraMC',
       html: `<div style="font-family:Arial;padding:20px;background:#111;color:#fff;border-radius:8px;">
         <h2 style="color:#ef4444;">Email Test Successful</h2>
         <p>If you're reading this, your Resend email system is working correctly.</p>
@@ -150,13 +150,13 @@ router.patch('/admin/:id/status', authMiddleware, async (req, res) => {
     if (status === 'resolved') {
       sendMail({
         to: ticket.email,
-        subject: 'Your Redline SMP ticket has been resolved',
+        subject: 'Your EsraMC ticket has been resolved',
         html: ticketResolvedHTML(tplData),
       }).then(ok => console.log(`[Tickets] Resolved email to ${ticket.email}: ${ok ? '✅ sent' : '❌ failed'}`));
     } else if (status === 'declined') {
       sendMail({
         to: ticket.email,
-        subject: 'Your Redline SMP ticket update',
+        subject: 'Your EsraMC ticket update',
         html: ticketDeclinedHTML(tplData),
       }).then(ok => console.log(`[Tickets] Declined email to ${ticket.email}: ${ok ? '✅ sent' : '❌ failed'}`));
     }

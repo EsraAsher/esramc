@@ -102,7 +102,7 @@ router.post('/apply', applyLimiter, async (req, res) => {
     // Email to creator
     sendMail({
       to: application.email,
-      subject: '📋 Referral Application Received — Redline SMP',
+      subject: '📋 Referral Application Received — EsraMC',
       html: referralApplicationReceivedHTML({ creatorName: application.creatorName }),
     }).catch(() => {});
 
@@ -111,7 +111,7 @@ router.post('/apply', applyLimiter, async (req, res) => {
     if (adminEmail) {
       sendMail({
         to: adminEmail,
-        subject: '🔔 New Referral Application — Redline SMP',
+        subject: '🔔 New Referral Application — EsraMC',
         html: referralApplicationAdminHTML(templateData),
       }).catch(() => {});
     }
@@ -219,7 +219,7 @@ router.patch('/admin/:id/approve', authMiddleware, async (req, res) => {
     // ── Notifications ───────────────────────────────────────
     sendMail({
       to: application.email,
-      subject: '🎉 You\'re Approved! — Redline SMP Referral Program',
+      subject: '🎉 You\'re Approved! — EsraMC Referral Program',
       html: referralApprovedHTML({
         creatorName: application.creatorName,
         referralCode: code,
@@ -289,7 +289,7 @@ router.patch('/admin/:id/reject', authMiddleware, async (req, res) => {
     // ── Notifications ───────────────────────────────────────
     sendMail({
       to: application.email,
-      subject: '📋 Referral Application Update — Redline SMP',
+      subject: '📋 Referral Application Update — EsraMC',
       html: referralRejectedHTML({ creatorName: application.creatorName }),
     }).catch(() => {});
 

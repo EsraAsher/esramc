@@ -1,8 +1,8 @@
 {
-  "name": "redline-smp-server",
+  "name": "esramc-server",
   "version": "1.0.0",
   "type": "module",
-  "description": "Redline SMP Store Backend API",
+  "description": "EsraMC Store Backend API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

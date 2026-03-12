@@ -5,7 +5,7 @@ const Hero = () => {
   const serverIP = "node-1.zenithcloud.fun:25514";
 
   const handleCopy = () => {
-    navigator.clipboard.writeText('mc.redlinesmp.fun');
+    navigator.clipboard.writeText('mc.esramc.fun');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -27,7 +27,7 @@ const Hero = () => {
             </svg>
           </div>
           <div className="flex flex-col">
-            <span className="text-white font-bold text-sm tracking-wide">MC.REDLINESMP.FUN</span>
+            <span className="text-white font-bold text-sm tracking-wide">MC.ESRAMC.FUN</span>
             <span className="text-gray-400 text-xs">
               {copied ? 'Copied!' : 'Click to copy'}
             </span>
@@ -38,7 +38,7 @@ const Hero = () => {
         <div className="text-center">
           <img 
             src="https://i.postimg.cc/3JjMvMM7/nobg-logo-hero-sec.png" 
-            alt="Redline SMP" 
+            alt="EsraMC" 
             className="w-auto h-32 sm:h-44 md:h-57 lg:h-62 mx-auto mb-4 sm:mb-8 animate-pulse drop-shadow-[0_0_10px_rgba(255,0,0,0.7)]"
           />
           <p className="text-sm sm:text-base md:text-xl text-gray-300 mb-4 sm:mb-8 max-w-2xl mx-auto px-2 font-light tracking-wide leading-relaxed text-center">
@@ -57,7 +57,7 @@ const Hero = () => {
                 </svg>
               </div>
               <div className="flex flex-col">
-                <span className="text-white font-bold text-sm">MC.REDLINESMP.FUN</span>
+                <span className="text-white font-bold text-sm">MC.ESRAMC.FUN</span>
                 <span className="text-gray-400 text-xs">{copied ? 'Copied!' : 'Click to copy'}</span>
               </div>
             </div>

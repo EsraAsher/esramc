@@ -274,7 +274,7 @@ router.post('/admin/approve', async (req, res) => {
     // Notifications (fire-and-forget)
     sendMail({
       to: application.email,
-      subject: '🎉 You\'re Approved! — Redline SMP Referral Program',
+      subject: '🎉 You\'re Approved! — EsraMC Referral Program',
       html: referralApprovedHTML({
         creatorName: application.creatorName,
         referralCode: code,
@@ -344,7 +344,7 @@ router.post('/admin/reject', async (req, res) => {
     // Notifications (fire-and-forget)
     sendMail({
       to: application.email,
-      subject: '📋 Referral Application Update — Redline SMP',
+      subject: '📋 Referral Application Update — EsraMC',
       html: referralRejectedHTML({ creatorName: application.creatorName }),
     }).catch(() => {});
 
@@ -400,7 +400,7 @@ router.post('/admin/payout-reject', async (req, res) => {
       if (app?.email) {
         sendMail({
           to: app.email,
-          subject: '❌ Payout Request Rejected — Redline SMP',
+          subject: '❌ Payout Request Rejected — EsraMC',
           html: payoutRejectedHTML({
             creatorName: pr.creatorName,
             amount: pr.amount,
@@ -503,7 +503,7 @@ router.post('/admin/payout-complete', async (req, res) => {
       if (app?.email) {
         sendMail({
           to: app.email,
-          subject: '💸 Payout Processed — Redline SMP',
+          subject: '💸 Payout Processed — EsraMC',
           html: payoutProcessedHTML({
             creatorName: partner.creatorName,
             amount: pr.amount,

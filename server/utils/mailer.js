@@ -103,9 +103,9 @@ function wrap(body) {
     <!-- Footer -->
     <div style="background:#080808;padding:20px 32px;text-align:center;border-top:1px solid #1a1a1a;">
       <div style="margin-bottom:12px;">
-        <a href="https://redlinesmp.fun" style="color:#888;text-decoration:none;font-size:11px;margin:0 8px;">Website</a>
+        <a href="https://esramc.fun" style="color:#888;text-decoration:none;font-size:11px;margin:0 8px;">Website</a>
         <span style="color:#333;">&middot;</span>
-        <a href="https://store.redlinesmp.fun" style="color:#888;text-decoration:none;font-size:11px;margin:0 8px;">Store</a>
+        <a href="https://store.esramc.fun" style="color:#888;text-decoration:none;font-size:11px;margin:0 8px;">Store</a>
         <span style="color:#333;">&middot;</span>
         <a href="https://discord.gg/wBNMMj2PE4" style="color:#ef4444;text-decoration:none;font-size:11px;margin:0 8px;">Discord</a>
       </div>
@@ -362,7 +362,7 @@ export function referralRejectedHTML({ creatorName }) {
 
     <p style="color:#ccc;font-size:14px;line-height:1.8;margin:0 0 20px;">
       Hey <strong style="color:#fff;">${creatorName || 'there'}</strong>,<br/>
-      Thank you for your interest in the <strong style="color:#ef4444;">Redline SMP Creator Referral Program</strong>. After reviewing your application, we're unable to approve it at this time.
+      Thank you for your interest in the <strong style="color:#3AA7E3;">EsraMC Creator Referral Program</strong>. After reviewing your application, we're unable to approve it at this time.
     </p>
 
     <div style="background:#0a0a0a;border-left:3px solid #ef4444;padding:12px 16px;margin:20px 0;border-radius:0 6px 6px 0;">
@@ -390,7 +390,7 @@ export function payoutProcessedHTML({ creatorName, amount, referralCode, remaini
 
     <p style="color:#ccc;font-size:14px;line-height:1.8;margin:0 0 20px;">
       Hey <strong style="color:#fff;">${creatorName || 'there'}</strong>,<br/>
-      A payout has been processed for your <strong style="color:#ef4444;">Redline SMP</strong> referral account.
+      A payout has been processed for your <strong style="color:#3AA7E3;">EsraMC</strong> referral account.
     </p>
 
     <div style="text-align:center;margin:24px 0;padding:20px;background:#0a0a0a;border:2px solid rgba(34,197,94,0.3);border-radius:12px;">
@@ -409,8 +409,9 @@ export function payoutProcessedHTML({ creatorName, amount, referralCode, remaini
       If you have any questions about this payout, please reach out on Discord.
     </p>
 
-    ${ctaButton('VIEW DASHBOARD', 'https://redlinesmp.fun/creator/dashboard')}
+    ${ctaButton('VIEW DASHBOARD', 'https://esramc.fun/creator/dashboard')}
   `);
+}
 }
 
 export function payoutRejectedHTML({ creatorName, amount, reason }) {
@@ -435,6 +436,7 @@ export function payoutRejectedHTML({ creatorName, amount, reason }) {
       If you believe this is an error, please reach out on Discord. You can submit a new payout request once the issue is resolved.
     </p>
 
-    ${ctaButton('VIEW DASHBOARD', 'https://redlinesmp.fun/creator/dashboard')}
+    ${ctaButton('VIEW DASHBOARD', 'https://esramc.fun/creator/dashboard')}
   `);
+}
 }

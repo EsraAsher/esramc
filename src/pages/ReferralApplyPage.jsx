@@ -48,7 +48,7 @@ const ReferralApplyPage = () => {
             APPLICATION SUBMITTED!
           </h1>
           <p className="text-gray-400 text-sm leading-relaxed max-w-md mx-auto">
-            Thanks for applying to the Redline SMP Creator Referral Program!
+            Thanks for applying to the EsraMC Creator Referral Program!
             Check your email for a confirmation. Our team will review your application within 1–3 days.
           </p>
           <a

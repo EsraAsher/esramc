@@ -57,14 +57,14 @@ export async function createCashfreeOrder(orderData) {
     order_currency: orderData.currency || 'INR',
     customer_details: {
       customer_id: orderData.mcUsername.replace(/[^a-zA-Z0-9_-]/g, '_'),
-      customer_email: orderData.email || 'noreply@redlinesmp.fun',
+      customer_email: orderData.email || 'noreply@esramc.fun',
       customer_phone: '9999999999', // required by Cashfree, placeholder
     },
     order_meta: {
-      return_url: orderData.returnUrl || process.env.FRONTEND_URL || 'https://store.redlinesmp.fun',
+      return_url: orderData.returnUrl || process.env.FRONTEND_URL || 'https://store.esramc.fun',
       notify_url: null, // webhook is configured in Cashfree dashboard, not per-order
     },
-    order_note: `Redline SMP purchase for ${orderData.mcUsername}`,
+    order_note: `EsraMC purchase for ${orderData.mcUsername}`,
     order_tags: {
       mcUsername: orderData.mcUsername,
     },
