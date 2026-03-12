@@ -11,6 +11,7 @@ const Navbar = ({ username }) => {
   const mobileDropdownRef = useRef(null);
   const { cartCount, setCartOpen, justAdded } = useCart();
   const location = useLocation();
+  const isHomepage = location.pathname === '/';
 
   // Check if we're on the store or a store-related page
   const isStorePage = location.pathname === '/store' || location.pathname.startsWith('/collection/');
@@ -71,15 +72,6 @@ const Navbar = ({ username }) => {
               </svg>
             </button>
 
-            {/* Center - Logo */}
-            <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-              <img
-                src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
-                alt="EsraMC"
-                className="h-8 sm:h-10 md:h-12 w-auto object-contain"
-              />
-            </Link>
-
             {/* Right - Username + Cart */}
             <div className="flex items-center gap-2 sm:gap-4">
               {username && (
@@ -114,12 +106,12 @@ const Navbar = ({ username }) => {
         >
           {/* Drawer header */}
           <div className="flex items-center justify-between p-5 border-b border-white/10">
-            <Link to="/" onClick={() => setDrawerOpen(false)}>
-              <img
-                src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
-                alt="EsraMC"
-                className="h-8 w-auto"
-              />
+            <Link
+              to="/"
+              onClick={() => setDrawerOpen(false)}
+              className="font-pixel text-xs text-gray-300 hover:text-sky-blue transition-colors"
+            >
+              HOME
             </Link>
             <button
               onClick={() => setDrawerOpen(false)}
@@ -201,14 +193,13 @@ const Navbar = ({ username }) => {
 
   /* ═══════════════════ DEFAULT NAVBAR (non-store) ═══════════════════ */
   return (
-    <nav className={`fixed w-full z-40 top-0 left-0 p-3 sm:p-4 md:p-6 transition-all duration-300 ${scrolled ? 'bg-dark-bg/70 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.5)]' : 'bg-transparent'}`}>
+    <nav className={`${isHomepage ? 'absolute' : 'fixed'} w-full z-40 top-0 left-0 p-3 sm:p-4 md:p-6 transition-all duration-300 ${scrolled ? 'bg-dark-bg/70 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.5)]' : 'bg-transparent'}`}>
       <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Link to="/">
-          <img
-            src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
-            alt="EsraMC"
-            className="h-8 sm:h-10 md:h-12 w-auto object-contain"
-          />
+        <Link
+          to="/"
+          className="font-pixel text-xs text-gray-300 hover:text-sky-blue transition-colors"
+        >
+          HOME
         </Link>
 
         <div className="hidden md:flex gap-8 font-pixel text-xs text-gray-300 items-center">
