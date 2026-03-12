@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import News from '../models/News.js';
 import authMiddleware from '../middleware/auth.js';
-import { auditLogger } from '../utils/auditLogger.js';
+import { logAction } from '../utils/auditLogger.js';
 
 const router = Router();
 
@@ -100,10 +100,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
     await news.save();
 
-    await auditLogger('NEWS_CREATE', req.user.username || req.user.discordId, {
-      newsId: news._id,
-      title: news.title,
-    });
+    await logAction(req.user, 'NEWS_CREATE', news.title, { newsId: news._id });
 
     res.status(201).json(news);
   } catch (err) {
@@ -143,10 +140,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     await news.save();
 
-    await auditLogger('NEWS_UPDATE', req.user.username || req.user.discordId, {
-      newsId: news._id,
-      title: news.title
-    });
+    await logAction(req.user, 'NEWS_UPDATE', news.title, { newsId: news._id });
 
     res.json(news);
   } catch (err) {
@@ -169,10 +163,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'News not found' });
     }
 
-    await auditLogger('NEWS_DELETE', req.user.username || req.user.discordId, {
-      newsId: id,
-      title: news.title
-    });
+    await logAction(req.user, 'NEWS_DELETE', news.title, { newsId: id });
 
     res.json({ message: 'News deleted successfully' });
   } catch (err) {
