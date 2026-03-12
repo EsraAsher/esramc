@@ -67,16 +67,29 @@ const LimitedTimeDeal = () => {
 
   if (loading || !deal) return null;
 
-  const { title, badgeText, bgColor, accentColor, endDate, stockRemaining, soldOut, expired, mediaType, mediaUrl, product } = deal;
+  const {
+    title,
+    badgeText,
+    bgColor,
+    accentColor,
+    endDate,
+    stockRemaining,
+    soldOut,
+    expired,
+    mediaType,
+    mediaUrl,
+    product,
+  } = deal;
+  const safeProduct = product && typeof product === 'object' ? product : null;
 
   const handleAdd = () => {
-    if (soldOut || expired) return;
+    if (soldOut || expired || !safeProduct?._id) return;
     const ok = addToCart({
-      id: product._id,
-      title: product.title,
-      price: product.price,
-      image: product.image,
-      maxQuantityPerOrder: product.maxQuantityPerOrder,
+      id: safeProduct._id,
+      title: safeProduct.title || 'Limited Deal',
+      price: safeProduct.price || 0,
+      image: safeProduct.image || '',
+      maxQuantityPerOrder: safeProduct.maxQuantityPerOrder,
     });
     if (ok === false) return; // blocked by limit
     setAdded(true);
@@ -166,10 +179,10 @@ const LimitedTimeDeal = () => {
                     playsInline
                     className="w-full h-full object-cover"
                   />
-                ) : (mediaType === 'image' && mediaUrl) || product.image ? (
+                ) : (mediaType === 'image' && mediaUrl) || safeProduct?.image ? (
                   <img
-                    src={mediaUrl || product.image}
-                    alt={product.title}
+                    src={mediaUrl || safeProduct?.image}
+                    alt={safeProduct?.title || title || 'Limited deal'}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -180,16 +193,18 @@ const LimitedTimeDeal = () => {
                 )}
 
                 {/* Price tag — small on mobile */}
-                <div
-                  className="absolute top-1 right-1 sm:top-2 sm:right-2 font-pixel text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-lg"
-                  style={{
-                    background: `${glowColor}dd`,
-                    color: '#fff',
-                    boxShadow: `0 0 12px ${glowColor}66`,
-                  }}
-                >
-                  ₹{product.price}
-                </div>
+                {!expired && safeProduct && (
+                  <div
+                    className="absolute top-1 right-1 sm:top-2 sm:right-2 font-pixel text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded sm:rounded-lg"
+                    style={{
+                      background: `${glowColor}dd`,
+                      color: '#fff',
+                      boxShadow: `0 0 12px ${glowColor}66`,
+                    }}
+                  >
+                    ₹{safeProduct.price}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -197,7 +212,7 @@ const LimitedTimeDeal = () => {
             <div className="flex-1 flex flex-col justify-between min-w-0">
               <div className="min-w-0">
                 <h3 className="font-pixel text-sm sm:text-xl md:text-2xl text-white font-bold mb-1 sm:mb-3 truncate">
-                  {product.title}
+                  {safeProduct?.title || title}
                 </h3>
 
                 {/* Stock badge inline on mobile */}
@@ -218,9 +233,9 @@ const LimitedTimeDeal = () => {
                 )}
 
                 {/* Features — hidden on mobile, shown on sm+ */}
-                {product.features && product.features.length > 0 && (
+                {Array.isArray(safeProduct?.features) && safeProduct.features.length > 0 && (
                   <ul className="hidden sm:block space-y-1.5 mb-4">
-                    {product.features.map((f, i) => (
+                    {safeProduct.features.map((f, i) => (
                       <li key={i} className="flex items-start text-gray-300 text-xs sm:text-sm">
                         <span style={{ color: glowColor }} className="mr-2 mt-0.5 shrink-0">◆</span>
                         <span>{f}</span>
