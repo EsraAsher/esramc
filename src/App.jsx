@@ -25,6 +25,8 @@ import CreatorDashboardPage from './pages/CreatorDashboardPage';
 import CreatorProgramPage from './pages/CreatorProgramPage';
 import LimitedTimeDeal from './components/LimitedTimeDeal';
 import AnnouncementBar from './components/AnnouncementBar';
+import NewsPage from './pages/NewsPage';
+import NewsPostPage from './pages/NewsPostPage';
 
 function StorePage() {
   const [sections, setSections] = useState([]);
@@ -75,7 +77,7 @@ function StorePage() {
       </div>
 
       <footer className="py-8 sm:py-12 border-t border-white/10 mt-12 sm:mt-20 text-center text-gray-500 text-xs sm:text-sm px-4">
-        &copy; 2026 Redline SMP. Not affiliated with Mojang AB or Microsoft.
+        &copy; 2024 EsraMC. Not affiliated with Mojang AB or Microsoft.
       </footer>
     </main>
   );
@@ -146,6 +148,9 @@ function App() {
                     </AdminRoute>
                   }
                 />
+
+                <Route path="/news" element={<NewsPage />} />
+                <Route path="/news/:slug" element={<NewsPostPage />} />
 
                 {/* Catch-all redirect */}
                 <Route path="*" element={<Navigate to="/" replace />} />

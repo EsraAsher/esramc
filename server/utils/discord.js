@@ -150,8 +150,8 @@ async function postWebhook(url, embed) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      username: 'Redline SMP',
-      avatar_url: 'https://store.redlinesmp.fun/favicon.ico',
+      username: 'EsraMC',
+      avatar_url: 'https://store.esramc.fun/favicon.ico',
       embeds: [embed],
     }),
   });

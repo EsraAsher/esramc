@@ -8,15 +8,15 @@ const CreatorProgramPage = () => {
         CREATOR PROGRAM
       </h1>
       <p className="text-gray-400 text-center mb-8 sm:mb-12 md:mb-16 max-w-xl mx-auto">
-        Partner with Redline SMP, grow your audience, and earn commission on every sale.
+        Partner with EsraMC, grow your audience, and earn commission on every sale.
       </p>
 
       {/* Hero Card */}
       <div className="bg-dark-surface border border-red-500/20 rounded-xl p-5 sm:p-8 md:p-10 mb-8 sm:mb-12 text-center">
         <div className="text-5xl mb-4">🎬</div>
-        <h2 className="font-pixel text-sm sm:text-base text-red-400 mb-4">BECOME A REDLINE CREATOR</h2>
+        <h2 className="font-pixel text-sm sm:text-base text-sky-blue mb-4">BECOME AN ESRAMC CREATOR</h2>
         <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-          The <span className="text-red-400 font-bold">Redline SMP Creator Program</span> is our official partnership for content creators, streamers, and community builders.
+          The <span className="text-sky-blue font-bold">EsraMC Creator Program</span> is our official partnership for content creators, streamers, and community builders.
           Get your own referral code, offer your audience exclusive discounts, and earn real commission on every purchase made with your code.
         </p>
       </div>
@@ -92,7 +92,7 @@ const CreatorProgramPage = () => {
             'An active content creation channel (YouTube, Twitch, TikTok, etc.)',
             'A Discord account (used for communication and dashboard login)',
             'A Minecraft account (Java Edition)',
-            'Genuine interest in the Redline SMP community',
+            'Genuine interest in the EsraMC community',
           ].map((req, i) => (
             <li key={i} className="flex items-start gap-3">
               <span className="text-red-400 mt-0.5">▸</span>
@@ -109,7 +109,7 @@ const CreatorProgramPage = () => {
           READY TO JOIN?
         </h2>
         <p className="text-gray-400 text-sm max-w-lg mx-auto leading-relaxed">
-          Apply now to become a Redline SMP Creator. Join our Creator Program Discord server for updates, announcements, and community.
+          Apply now to become an EsraMC Creator. Join our Creator Program Discord server for updates, announcements, and community.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

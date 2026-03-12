@@ -252,3 +252,11 @@ export const updateAdminMOTD = (data) =>
   request('/motd/admin', { method: 'PUT', body: JSON.stringify(data) });
 export const resetMOTDStock = () =>
   request('/motd/admin/reset-stock', { method: 'POST' });
+
+// ─── News ─────────────────────────────────────────────────
+export const fetchActiveNews = (limit = 0) => request(`/news?limit=${limit}`);
+export const fetchNewsBySlug = (slug) => request(`/news/post/${slug}`);
+export const fetchAllNews = () => request('/news/admin/all');
+export const createNews = (data) => request('/news', { method: 'POST', body: JSON.stringify(data) });
+export const updateNews = (id, data) => request(`/news/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteNews = (id) => request(`/news/${id}`, { method: 'DELETE' });

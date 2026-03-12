@@ -11,10 +11,12 @@ import AdminMOTD from './AdminMOTD';
 import AdminAuditLogs from './AdminAuditLogs';
 import AdminManualOrders from './AdminManualOrders';
 import AdminAnnouncementBar from './AdminAnnouncementBar';
+import AdminNews from './AdminNews';
 
 const tabs = [
   { id: 'analytics', label: 'Analytics', icon: '💰' },
   { id: 'manual-orders', label: 'Manual Orders', icon: '📝' },
+  { id: 'news', label: 'News', icon: '📰' },
   { id: 'announcement', label: 'Announcement', icon: '📢' },
   { id: 'motd', label: 'MOTD', icon: '🔥' },
   { id: 'products', label: 'Products', icon: '📦' },
@@ -40,14 +42,14 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="font-pixel text-lg sm:text-2xl text-red-400 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">
-            ADMIN PANEL
+          <h1 className="font-pixel text-lg sm:text-2xl text-sky-blue drop-shadow-[0_0_10px_rgba(58,167,227,0.5)]">
+            ESRAMC ADMIN
           </h1>
           <p className="text-gray-500 text-sm mt-1">Welcome, {admin?.displayName || admin?.discordId || admin?.username || 'Admin'}</p>
         </div>
         <button
           onClick={logout}
-          className="self-start md:self-auto px-4 py-2 font-pixel text-xs bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+          className="self-start md:self-auto px-4 py-2 font-pixel text-xs bg-sky-blue/10 border border-sky-blue/30 text-sky-blue rounded-lg hover:bg-sky-blue/20 transition-colors"
         >
           LOGOUT
         </button>
@@ -61,7 +63,7 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 font-pixel text-xs rounded-lg transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? 'bg-red-500/20 border border-red-500/50 text-red-400 shadow-[0_0_10px_rgba(255,0,0,0.2)]'
+              ? 'bg-sky-blue/20 border border-sky-blue/50 text-sky-blue shadow-[0_0_10px_rgba(58,167,227,0.2)]'
                 : 'bg-dark-surface border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
             }`}
           >
@@ -73,6 +75,7 @@ const AdminDashboard = () => {
 
       {/* Tab Content */}
       {activeTab === 'analytics' && <AdminAnalytics />}
+      {activeTab === 'news' && <AdminNews />}
       {activeTab === 'announcement' && <AdminAnnouncementBar />}
       {activeTab === 'motd' && <AdminMOTD />}
       {activeTab === 'products' && <AdminProducts />}

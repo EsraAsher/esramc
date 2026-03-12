@@ -74,8 +74,8 @@ const Navbar = ({ username }) => {
             {/* Center - Logo */}
             <Link to="/" className="absolute left-1/2 -translate-x-1/2">
               <img
-                src="https://i.postimg.cc/ZRSXwVzv/logo-nobg-png.png"
-                alt="Redline SMP"
+                src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
+                alt="EsraMC"
                 className="h-8 sm:h-10 md:h-12 w-auto object-contain"
               />
             </Link>
@@ -92,8 +92,8 @@ const Navbar = ({ username }) => {
                 onClick={() => setCartOpen(true)}
                 className={`font-pixel text-[10px] sm:text-xs px-3 py-1.5 sm:px-4 sm:py-2 rounded transition-all duration-300 ${
                   justAdded
-                    ? 'bg-red-400 text-black shadow-[0_0_20px_rgba(255,0,0,0.6)] scale-110'
-                    : 'bg-red-500 text-black hover:bg-white'
+                    ? 'bg-sky-blue text-black shadow-[0_0_20px_rgba(58,167,227,0.6)] scale-110'
+                    : 'bg-sky-blue text-black hover:bg-white'
                 }`}
               >
                 CART ({cartCount})
@@ -116,8 +116,8 @@ const Navbar = ({ username }) => {
           <div className="flex items-center justify-between p-5 border-b border-white/10">
             <Link to="/" onClick={() => setDrawerOpen(false)}>
               <img
-                src="https://i.postimg.cc/ZRSXwVzv/logo-nobg-png.png"
-                alt="Redline SMP"
+                src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
+                alt="EsraMC"
                 className="h-8 w-auto"
               />
             </Link>
@@ -137,17 +137,17 @@ const Navbar = ({ username }) => {
             {/* Main links */}
             <Link
               to="/store"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
+              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-sky-blue"
               onClick={() => setDrawerOpen(false)}
             >
               🛒 STORE
             </Link>
             <Link
               to="/vote"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
+              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-sky-blue"
               onClick={() => setDrawerOpen(false)}
             >
-              🗳️ VOTE US
+              🗳️ VOTE
             </Link>
 
             {/* Collections divider */}
@@ -162,8 +162,8 @@ const Navbar = ({ username }) => {
                     to={`/collection/${col.slug}`}
                     className={`px-6 py-3 text-sm transition-all font-pixel border-l-2 ${
                       location.pathname === `/collection/${col.slug}`
-                        ? 'text-red-400 bg-red-500/10 border-red-500'
-                        : 'text-gray-400 hover:text-white hover:bg-red-500/10 border-transparent hover:border-red-500'
+                        ? 'text-sky-blue bg-sky-blue/10 border-sky-blue'
+                        : 'text-gray-400 hover:text-white hover:bg-sky-blue/10 border-transparent hover:border-sky-blue'
                     }`}
                     onClick={() => setDrawerOpen(false)}
                   >
@@ -179,30 +179,16 @@ const Navbar = ({ username }) => {
             </div>
             <Link
               to="/help"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
+              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-sky-blue"
               onClick={() => setDrawerOpen(false)}
             >
               🎫 HELP
-            </Link>
-            <Link
-              to="/creators"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
-              onClick={() => setDrawerOpen(false)}
-            >
-              🎬 CREATORS
-            </Link>
-            <Link
-              to="/about"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
-              onClick={() => setDrawerOpen(false)}
-            >
-              ℹ️ ABOUT US
             </Link>
             <a
               href="https://discord.gg/wBNMMj2PE4"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-red-500"
+              className="px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-l-2 border-transparent hover:border-sky-blue"
               onClick={() => setDrawerOpen(false)}
             >
               💬 DISCORD ↗
@@ -219,18 +205,16 @@ const Navbar = ({ username }) => {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link to="/">
           <img
-            src="https://i.postimg.cc/ZRSXwVzv/logo-nobg-png.png"
-            alt="Redline SMP"
+            src="https://i.postimg.cc/3JjMvMM7/ezramc-logo.png"
+            alt="EsraMC"
             className="h-8 sm:h-10 md:h-12 w-auto object-contain"
           />
         </Link>
 
         <div className="hidden md:flex gap-8 font-pixel text-xs text-gray-300 items-center">
-          <Link to="/store" className="hover:text-red-400 transition-colors">STORE</Link>
-          <Link to="/vote" className="hover:text-red-400 transition-colors">VOTE US</Link>
-          <Link to="/help" className="hover:text-red-400 transition-colors">HELP</Link>
-          <Link to="/creators" className="hover:text-red-400 transition-colors">CREATORS</Link>
-          <Link to="/about" className="hover:text-red-400 transition-colors">ABOUT US</Link>
+          <Link to="/vote" className="hover:text-sky-blue transition-colors">VOTE</Link>
+          <Link to="/store" className="hover:text-sky-blue transition-colors">STORE</Link>
+          <a href="https://discord.gg/wBNMMj2PE4" target="_blank" rel="noopener noreferrer" className="hover:text-sky-blue transition-colors">DISCORD</a>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
@@ -238,27 +222,21 @@ const Navbar = ({ username }) => {
           <div className="relative md:hidden" ref={mobileDropdownRef}>
             <button
               onClick={() => setMoreOpen(!moreOpen)}
-              className="font-pixel text-sm text-gray-300 hover:text-red-400 transition-colors"
+              className="font-pixel text-sm text-gray-300 hover:text-sky-blue transition-colors"
             >
               <span>MENU</span>
             </button>
             {moreOpen && (
-              <div className="absolute top-full right-0 mt-3 w-52 bg-dark-surface border border-red-500/30 rounded-lg shadow-[0_0_20px_rgba(255,0,0,0.15)] overflow-hidden">
-                <Link to="/store" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
+              <div className="absolute top-full right-0 mt-3 w-52 bg-dark-surface border border-sky-blue/30 rounded-lg shadow-[0_0_20px_rgba(58,167,227,0.15)] overflow-hidden">
+                <Link to="/store" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
                   🛒 STORE
                 </Link>
-                <Link to="/vote" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
-                  🗳️ VOTE US
+                <Link to="/vote" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
+                  🗳️ VOTE
                 </Link>
-                <Link to="/help" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
-                  🎫 HELP
-                </Link>
-                <Link to="/creators" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
-                  🎬 CREATORS
-                </Link>
-                <Link to="/about" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-red-500/10 transition-all font-pixel text-sm" onClick={() => setMoreOpen(false)}>
-                  ℹ️ ABOUT US
-                </Link>
+                <a href="https://discord.gg/wBNMMj2PE4" target="_blank" rel="noopener noreferrer" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm" onClick={() => setMoreOpen(false)}>
+                  💬 DISCORD ↗
+                </a>
               </div>
             )}
           </div>

@@ -198,7 +198,7 @@ const CartDrawer = () => {
           key: orderData.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency,
-          name: 'Redline SMP',
+          name: 'EsraMC',
           description: `Purchase for ${mcUsername.trim()}`,
           order_id: orderData.razorpayOrderId,
           prefill: {

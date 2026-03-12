@@ -21,6 +21,7 @@ import botRoutes from './routes/bot.js';
 import purchaseRoutes from './routes/purchases.js';
 import motdRoutes from './routes/motd.js';
 import announcementRoutes from './routes/announcement.js';
+import newsRoutes from './routes/news.js';
 
 dotenv.config();
 
@@ -91,9 +92,9 @@ const pluginLimiter = rateLimit({
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://store.redlinesmp.fun',
-  'https://redlinesmp.fun',
-  'https://www.redlinesmp.fun',
+  'https://store.esramc.fun',
+  'https://esramc.fun',
+  'https://www.esramc.fun',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -144,6 +145,7 @@ app.use('/api/bot', botRoutes);
 app.use('/api/purchases', purchaseRoutes);
 app.use('/api/motd', motdRoutes);
 app.use('/api/announcement', announcementRoutes);
+app.use('/api/news', newsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -152,14 +154,14 @@ app.get('/api/health', (req, res) => {
 
 // Root route — confirms API is online
 app.get('/', (req, res) => {
-  res.json({ message: 'Redline SMP API is running', docs: '/api/health' });
+  res.json({ message: 'EsraMC API is running', docs: '/api/health' });
 });
 
 // Bind port FIRST so Render's port scanner detects it immediately,
 // then connect to MongoDB in the background.
 const start = async () => {
   app.listen(PORT, () => {
-    console.log(`\n✅ Redline SMP Server running on http://localhost:${PORT}`);
+    console.log(`\n✅ EsraMC Server running on http://localhost:${PORT}`);
     console.log(`  → Admin panel: http://localhost:5173/adminishere\n`);
   });
 

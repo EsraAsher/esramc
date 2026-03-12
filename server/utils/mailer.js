@@ -42,13 +42,13 @@ export async function sendMail({ to, subject, html }) {
     return false;
   }
 
-  const fromAddress = process.env.EMAIL_FROM || 'Redline SMP <noreply@redlinesmp.fun>';
+  const fromAddress = process.env.EMAIL_FROM || 'EsraMC <noreply@esramc.fun>';
 
   try {
     const { data, error } = await client.emails.send({
       from: fromAddress,
       to,
-      reply_to: process.env.REPLY_TO || 'tickets@redlinesmp.fun',
+      reply_to: process.env.REPLY_TO || 'tickets@esramc.fun',
       subject,
       html,
     });
@@ -79,24 +79,24 @@ function wrap(body) {
   <div style="max-width:580px;margin:0 auto;background:#050505;">
     
     <!-- Top Accent Bar -->
-    <div style="height:4px;background:linear-gradient(90deg,#dc2626,#ef4444,#dc2626);"></div>
+    <div style="height:4px;background:linear-gradient(90deg,#3AA7E3,#6BC6F5,#3AA7E3);"></div>
     
     <!-- Header -->
-    <div style="background:#0a0a0a;padding:28px 32px;text-align:center;border-bottom:1px solid rgba(239,68,68,0.15);">
-      <div style="font-size:10px;letter-spacing:6px;color:#ef4444;font-weight:700;margin-bottom:4px;">⚔️ REDLINE SMP ⚔️</div>
+    <div style="background:#0a0a0a;padding:28px 32px;text-align:center;border-bottom:1px solid rgba(58,167,227,0.15);">
+      <div style="font-size:10px;letter-spacing:6px;color:#3AA7E3;font-weight:700;margin-bottom:4px;">☁️ ESRAMC ☁️</div>
       <div style="font-size:10px;letter-spacing:3px;color:#444;font-weight:400;">SUPPORT SYSTEM</div>
     </div>
     
     <!-- Body -->
-    <div style="background:#0d0d0d;padding:32px;border-left:1px solid rgba(239,68,68,0.08);border-right:1px solid rgba(239,68,68,0.08);">
+    <div style="background:#0d0d0d;padding:32px;border-left:1px solid rgba(58,167,227,0.08);border-right:1px solid rgba(58,167,227,0.08);">
       ${body}
     </div>
     
     <!-- Server Info Bar -->
-    <div style="background:#0a0a0a;padding:16px 32px;text-align:center;border-top:1px solid rgba(239,68,68,0.1);">
-      <div style="display:inline-block;background:#111;border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:8px 20px;">
+    <div style="background:#0a0a0a;padding:16px 32px;text-align:center;border-top:1px solid rgba(58,167,227,0.1);">
+      <div style="display:inline-block;background:#111;border:1px solid rgba(58,167,227,0.2);border-radius:6px;padding:8px 20px;">
         <span style="font-size:10px;color:#666;letter-spacing:1px;">SERVER IP</span><br/>
-        <span style="font-size:14px;color:#ef4444;font-family:'Courier New',monospace;font-weight:700;letter-spacing:1px;">mc.redlinesmp.fun</span>
+        <span style="font-size:14px;color:#3AA7E3;font-family:'Courier New',monospace;font-weight:700;letter-spacing:1px;">mc.esramc.fun</span>
       </div>
     </div>
     
@@ -109,7 +109,7 @@ function wrap(body) {
         <span style="color:#333;">&middot;</span>
         <a href="https://discord.gg/wBNMMj2PE4" style="color:#ef4444;text-decoration:none;font-size:11px;margin:0 8px;">Discord</a>
       </div>
-      <div style="font-size:10px;color:#333;">© ${new Date().getFullYear()} Redline SMP. All rights reserved.</div>
+      <div style="font-size:10px;color:#333;">© ${new Date().getFullYear()} EsraMC. All rights reserved.</div>
     </div>
     
     <!-- Bottom Accent Bar -->
@@ -203,7 +203,7 @@ export function ticketCreatedAdminHTML({ ticketId, email, username, category, me
       <p style="color:#ccc;font-size:13px;margin:0;white-space:pre-wrap;line-height:1.7;">${message}</p>
     </div>
 
-    ${ctaButton('OPEN ADMIN PANEL', 'https://store.redlinesmp.fun/admin/tickets')}
+    ${ctaButton('OPEN ADMIN PANEL', 'https://store.esramc.fun/admin/tickets')}
   `);
 }
 
@@ -228,7 +228,7 @@ export function ticketResolvedHTML({ ticketId, username }) {
       If you have any further issues, feel free to open a new ticket or reach out on Discord. We're always here to help!
     </p>
 
-    ${ctaButton('OPEN NEW TICKET', 'https://redlinesmp.fun/help')}
+    ${ctaButton('OPEN NEW TICKET', 'https://esramc.fun/help')}
   `);
 }
 
@@ -269,7 +269,7 @@ export function referralApplicationReceivedHTML({ creatorName }) {
 
     <p style="color:#ccc;font-size:14px;line-height:1.8;margin:0 0 20px;">
       Hey <strong style="color:#fff;">${creatorName || 'there'}</strong>,<br/>
-      Thanks for applying to the <strong style="color:#ef4444;">Redline SMP Creator Referral Program</strong>! We've received your application and our team will review it shortly.
+      Thanks for applying to the <strong style="color:#3AA7E3;">EsraMC Creator Program</strong>! We've received your application and our team will review it shortly.
     </p>
 
     <div style="background:#0a0a0a;border-left:3px solid #eab308;padding:12px 16px;margin:20px 0;border-radius:0 6px 6px 0;">
@@ -309,7 +309,7 @@ export function referralApplicationAdminHTML({ creatorName, email, minecraftUser
       <p style="color:#ccc;font-size:13px;margin:0;white-space:pre-wrap;line-height:1.7;">${description}</p>
     </div>` : ''}
 
-    ${ctaButton('REVIEW IN ADMIN PANEL', 'https://store.redlinesmp.fun/adminishere')}
+    ${ctaButton('REVIEW IN ADMIN PANEL', 'https://store.esramc.fun/adminishere')}
   `);
 }
 
@@ -323,7 +323,7 @@ export function referralApprovedHTML({ creatorName, referralCode, discountPercen
 
     <p style="color:#ccc;font-size:14px;line-height:1.8;margin:0 0 20px;">
       Hey <strong style="color:#fff;">${creatorName || 'there'}</strong>,<br/>
-      Congratulations! Your application to the <strong style="color:#ef4444;">Redline SMP Creator Referral Program</strong> has been <strong style="color:#22c55e;">approved</strong>!
+      Congratulations! Your application to the <strong style="color:#3AA7E3;">EsraMC Creator Program</strong> has been <strong style="color:#22c55e;">approved</strong>!
     </p>
 
     <div style="text-align:center;margin:24px 0;padding:20px;background:#0a0a0a;border:2px solid rgba(34,197,94,0.3);border-radius:12px;">
@@ -340,7 +340,7 @@ export function referralApprovedHTML({ creatorName, referralCode, discountPercen
     <div style="background:#0a0a0a;border-left:3px solid #22c55e;padding:12px 16px;margin:20px 0;border-radius:0 6px 6px 0;">
       <div style="font-size:10px;color:#555;letter-spacing:1px;margin-bottom:6px;">HOW IT WORKS</div>
       <p style="color:#999;font-size:13px;margin:0;line-height:1.8;">
-        Share your code <strong style="color:#fff;">${referralCode}</strong> with your audience. When they use it at checkout on the Redline SMP store, they get <strong style="color:#eab308;">${discountPercent}% off</strong> and you earn <strong style="color:#22c55e;">${commissionPercent}% commission</strong> on the sale.
+        Share your code <strong style="color:#fff;">${referralCode}</strong> with your audience. When they use it at checkout on the EsraMC store, they get <strong style="color:#eab308;">${discountPercent}% off</strong> and you earn <strong style="color:#22c55e;">${commissionPercent}% commission</strong> on the sale.
       </p>
     </div>
 
@@ -348,7 +348,7 @@ export function referralApprovedHTML({ creatorName, referralCode, discountPercen
       Commission payouts are handled manually by our team. Questions? Reach out on Discord.
     </p>
 
-    ${ctaButton('VISIT STORE', 'https://store.redlinesmp.fun')}
+    ${ctaButton('VISIT STORE', 'https://store.esramc.fun')}
   `);
 }
 

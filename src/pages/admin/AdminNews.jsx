@@ -1,0 +1,336 @@
+import { useState, useEffect } from 'react';
+import { fetchAllNews, createNews, updateNews, deleteNews } from '../../api';
+
+const AdminNews = () => {
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    summary: '',
+    content: '',
+    image: '',
+    author: '',
+    isActive: true,
+  });
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    loadNews();
+  }, []);
+
+  const loadNews = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchAllNews();
+      setNews(data);
+    } catch (err) {
+      setError('Failed to load news: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (selectedNews) {
+        await updateNews(selectedNews._id, formData);
+        setSuccess('News updated successfully');
+      } else {
+        await createNews(formData);
+        setSuccess('News created successfully');
+      }
+      
+      resetForm();
+      await loadNews();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (newsItem) => {
+    setSelectedNews(newsItem);
+    setFormData({
+      title: newsItem.title,
+      summary: newsItem.summary || newsItem.description || '', // helper for legacy
+      content: newsItem.content || '',
+      image: newsItem.image || '',
+      author: newsItem.author || '',
+      isActive: newsItem.isActive,
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this news item?')) return;
+    
+    setLoading(true);
+    try {
+      await deleteNews(id);
+      setSuccess('News deleted successfully');
+      await loadNews();
+    } catch (err) {
+      setError('Failed to delete news: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      summary: '',
+      content: '',
+      image: '',
+      author: '',
+      isActive: true,
+    });
+    setSelectedNews(null);
+    setShowForm(false);
+    // clear notifications after a while
+    setTimeout(() => {
+        setSuccess('');
+        setError('');
+    }, 3000);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">News Management</h1>
+          <p className="text-gray-400 text-sm">Manage homepage news articles and announcements</p>
+        </div>
+        <button
+          onClick={() => { resetForm(); setShowForm(true); }}
+          className="px-4 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-[0_0_10px_rgba(58,167,227,0.3)]"
+        >
+          ADD NEWS
+        </button>
+      </div>
+
+      {/* Notifications */}
+      {success && (
+        <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm animate-pulse">
+          {success}
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm animate-pulse">
+          {error}
+        </div>
+      )}
+
+      {/* News Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-dark-surface border border-white/10 rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-white font-pixel">
+                {selectedNews ? 'Edit News' : 'Create News'}
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">Title</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors"
+                  placeholder="e.g. Season 1 Launch"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-400 text-xs mb-1 font-pixel">Author (MC Username)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={formData.author}
+                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                      className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors"
+                      placeholder="e.g. psd1"
+                      required
+                    />
+                    {formData.author && (
+                      <div className="w-10 h-10 bg-dark-bg border border-white/10 rounded overflow-hidden shrink-0">
+                         <img 
+                            src={`https://mc-heads.net/avatar/${formData.author}`} 
+                            alt="Head" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.src = `https://mc-heads.net/avatar/Steve` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                   <label className="block text-gray-400 text-xs mb-1 font-pixel">Status</label>
+                   <div className="flex items-center gap-3 p-3 bg-dark-bg border border-white/10 rounded-lg h-11.5">
+                       <input
+                         type="checkbox"
+                         id="isActive"
+                         checked={formData.isActive}
+                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                         className="rounded text-sky-blue focus:ring-sky-blue bg-dark-surface border-white/20 w-4 h-4 cursor-pointer"
+                       />
+                       <label htmlFor="isActive" className="text-sm text-gray-300 cursor-pointer select-none">Active / Published</label>
+                   </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">
+                    Summary (Short Description)
+                    <span className="ml-2 text-gray-600 font-sans">{formData.summary.length}/300</span>
+                </label>
+                <textarea
+                  value={formData.summary}
+                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors h-24 text-sm"
+                  placeholder="Short description for the homepage card (max 300 chars)..."
+                  required
+                  maxLength={300}
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">Full Content</label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors h-64 font-mono text-sm"
+                  placeholder="Full article content..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">Image URL (Optional)</label>
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors font-pixel text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-lg disabled:opacity-50"
+                >
+                  {loading ? 'Saving...' : (selectedNews ? 'Update News' : 'Create News')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* News List */}
+      <div className="grid gap-4">
+        {news.length === 0 && !loading ? (
+          <div className="text-center py-12 text-gray-500 bg-dark-surface/50 rounded-xl border border-white/5">
+            No news articles found. Create one to get started.
+          </div>
+        ) : (
+          news.map((item) => (
+            <div
+              key={item._id}
+              className="bg-dark-surface border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center hover:border-white/10 transition-colors"
+            >
+              {/* Image Thumbnail */}
+              <div className="w-full sm:w-24 h-24 sm:h-24 bg-dark-bg rounded-lg overflow-hidden shrink-0 border border-white/5">
+                {item.image ? (
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
+                    No Image
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="grow min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h3 className="font-bold text-white text-lg truncate mr-2">{item.title}</h3>
+                  <span className={`px-2 py-0.5 text-[10px] rounded border ${
+                    item.isActive 
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                      : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                  }`}>
+                    {item.isActive ? 'ACTIVE' : 'DRAFT'}
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm line-clamp-2 mb-2">{item.summary}</p>
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <img 
+                         src={`https://mc-heads.net/avatar/${item.author}`} 
+                         alt="" 
+                         className="w-4 h-4 rounded-sm"
+                         onError={(e) => { e.target.style.display = 'none' }}
+                     />
+                    <span>{item.author}</span>
+                  </div>
+                  <span>•</span>
+                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <button
+                  onClick={() => handleEdit(item)}
+                  className="flex-1 sm:flex-none px-3 py-2 bg-sky-blue/10 text-sky-blue rounded hover:bg-sky-blue/20 transition-colors text-xs font-pixel border border-sky-blue/20"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="flex-1 sm:flex-none px-3 py-2 bg-red-500/10 text-red-500 rounded hover:bg-red-500/20 transition-colors text-xs font-pixel border border-red-500/20"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminNews;

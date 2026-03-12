@@ -5,12 +5,20 @@
   --color-neon-cyan: #00ffff;
   --color-dark-bg: #0a0a0a;
   --color-dark-surface: #1a1a1a;
+  --color-sky-blue: #3AA7E3;
+  --color-light-blue: #6BC6F5;
+  --color-pink-accent: #FF6BD6;
+  --color-dark-blue: #0F1C2E;
   --font-pixel: "Press Start 2P", cursive;
 }
 
 @layer utilities {
   .glow-text {
-    text-shadow: 0 0 10px #b026ff, 0 0 20px #00ffff;
+    text-shadow: 0 0 10px #3AA7E3, 0 0 20px #6BC6F5;
+  }
+  
+  .glow-text-pink {
+    text-shadow: 0 0 10px #FF6BD6, 0 0 20px #FF6BD6;
   }
   
   .text-shadow-sm {
@@ -21,6 +29,38 @@
     font-family: 'Press Start 2P', cursive;
     letter-spacing: -1px;
   }
+
+  .bg-sky-blue {
+    background-color: #3AA7E3;
+  }
+
+  .bg-light-blue {
+    background-color: #6BC6F5;
+  }
+
+  .bg-pink-accent {
+    background-color: #FF6BD6;
+  }
+
+  .bg-dark-blue {
+    background-color: #0F1C2E;
+  }
+
+  .text-sky-blue {
+    color: #3AA7E3;
+  }
+
+  .text-light-blue {
+    color: #6BC6F5;
+  }
+
+  .text-pink-accent {
+    color: #FF6BD6;
+  }
+
+  .border-sky-blue {
+    border-color: #3AA7E3;
+  }
 }
 
 html, body {
@@ -29,7 +69,7 @@ html, body {
 
 body {
   position: relative;
-  background-color: #0a0a0a;
+  background-color: #0F1C2E;
   color: #ffffff;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
@@ -44,14 +84,15 @@ body::before {
   background-image:
     linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0.7) 0%,
-      rgba(10, 0, 0, 0.8) 50%,
-      rgba(0, 0, 0, 0.92) 100%
+      rgba(15, 28, 46, 0.55) 0%,
+      rgba(58, 167, 227, 0.06) 45%,
+      rgba(15, 28, 46, 0.85) 100%
     ),
-    url('/bg.jpg');
+    url('/src/assets/bg.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
+  filter: saturate(1.02) contrast(0.95);
 }
 
 /* Animations */
@@ -89,12 +130,12 @@ body::before {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0a0a; 
+  background: #0F1C2E; 
 }
 ::-webkit-scrollbar-thumb {
   background: #333; 
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b026ff; 
+  background: #3AA7E3; 
 }

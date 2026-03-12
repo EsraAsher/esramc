@@ -178,10 +178,10 @@ const HelpPage = () => {
                 </div>
               </div>
               <a
-                href="mailto:support@redlinesmp.fun"
+                href="mailto:support@esramc.fun"
                 className="block mt-2 text-lg font-mono text-white hover:text-red-400 transition-colors break-all"
               >
-                support@redlinesmp.fun
+                support@esramc.fun
               </a>
               <p className="text-gray-500 text-xs mt-3">
                 Expect a response within 24-48 hours.
@@ -203,7 +203,7 @@ const HelpPage = () => {
                 <li className="border-b border-white/5 pb-3">
                   <span className="text-red-400 font-bold">Q:</span> How do I join the server?
                   <br />
-                  <span className="text-gray-500">Connect with: mc.redlinesmp.fun (Java Edition)</span>
+                  <span className="text-gray-500">Connect with: mc.esramc.fun (Java Edition)</span>
                 </li>
                 <li className="border-b border-white/5 pb-3">
                   <span className="text-red-400 font-bold">Q:</span> When do I receive my rank?

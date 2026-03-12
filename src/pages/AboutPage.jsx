@@ -8,18 +8,18 @@ const AboutPage = () => {
           ABOUT US
         </h1>
         <p className="text-gray-400 text-center mb-8 sm:mb-12 md:mb-16 max-w-xl mx-auto">
-          Learn more about the Redline SMP community.
+          Learn more about the EsraMC community.
         </p>
 
         {/* Hero Statement */}
         <div className="bg-dark-surface border border-red-500/20 rounded-xl p-5 sm:p-8 md:p-10 mb-8 sm:mb-12 text-center">
           <img
             src="https://i.postimg.cc/ZRSXwVzv/logo-nobg-png.png"
-            alt="Redline SMP Logo"
+            alt="EsraMC Logo"
             className="w-auto h-14 sm:h-20 mx-auto mb-4 sm:mb-6 drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]"
           />
           <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            <span className="text-red-400 font-bold">Redline SMP</span> is a premium Minecraft survival multiplayer
+            <span className="text-sky-blue font-bold">EsraMC</span> is a premium Minecraft survival multiplayer
             server built for players who crave adventure, community, and competition. We provide a unique experience
             with custom plugins, events, and a passionate team.
           </p>
@@ -86,7 +86,7 @@ const AboutPage = () => {
           </h2>
           <div className="bg-dark-surface border border-red-500/20 rounded-xl p-5 sm:p-8 md:p-10">
             <p className="text-gray-300 leading-relaxed mb-5">
-              We're a small group of self-taught developers and long-time fans who built Redline SMP out of pure passion.
+              We're a small group of self-taught developers and long-time fans who built EsraMC out of pure passion.
               We might not have a massive studio or unlimited resources, but we make up for it with grit and a focus on
               building a premium experience we'd actually want to play in.
             </p>
@@ -102,7 +102,7 @@ const AboutPage = () => {
         {/* CTA */}
         <div className="text-center bg-dark-surface border border-red-500/20 rounded-xl p-6 sm:p-8 md:p-10">
           <h2 className="text-lg sm:text-xl font-pixel text-red-400 mb-4">READY TO JOIN?</h2>
-          <p className="text-gray-400 mb-6">Connect to <span className="text-white font-mono font-bold">mc.redlinesmp.fun</span> and start your adventure today.</p>
+          <p className="text-gray-400 mb-6">Connect to <span className="text-white font-mono font-bold">mc.esramc.fun</span> and start your adventure today.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/store"
