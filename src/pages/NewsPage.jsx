@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchActiveNews } from '../api';
-import NewsCard from '../components/NewsCard';
+import NewsPost from '../components/NewsPost';
 import Navbar from '../components/Navbar';
 import Particles from '../components/Particles';
 
@@ -53,9 +53,9 @@ const NewsPage = () => {
             <p className="text-gray-500 font-pixel">No news available at the moment.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-col items-center gap-8">
             {news.map((item) => (
-              <NewsCard key={item._id} news={item} />
+              <NewsPost key={item._id} news={item} />
             ))}
           </div>
         )}
