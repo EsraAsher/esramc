@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
 
 const NewsCard = ({ news }) => {
   const { title, summary, image, author, createdAt, slug } = news;
@@ -60,17 +59,6 @@ const NewsCard = ({ news }) => {
       </div>
     </div>
   );
-};
-
-NewsCard.propTypes = {
-  news: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    summary: PropTypes.string.isRequired,
-    image: PropTypes.string,
-    author: PropTypes.string.isRequired,
-    createdAt: PropTypes.string.isRequired,
-    slug: PropTypes.string.isRequired,
-  }).isRequired,
 };
 
 export default NewsCard;
