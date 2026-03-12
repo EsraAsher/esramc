@@ -61,6 +61,14 @@
   .border-sky-blue {
     border-color: #3AA7E3;
   }
+
+  .glow-panel {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(58, 167, 227, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 0 20px rgba(58, 167, 227, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
 }
 
 html, body {

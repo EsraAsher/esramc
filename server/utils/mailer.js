@@ -438,4 +438,3 @@ export function payoutRejectedHTML({ creatorName, amount, reason }) {
     ${ctaButton('VIEW DASHBOARD', 'https://esramc.fun/creator/dashboard')}
   `);
 }
-}
