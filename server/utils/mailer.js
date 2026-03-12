@@ -412,7 +412,6 @@ export function payoutProcessedHTML({ creatorName, amount, referralCode, remaini
     ${ctaButton('VIEW DASHBOARD', 'https://esramc.fun/creator/dashboard')}
   `);
 }
-}
 
 export function payoutRejectedHTML({ creatorName, amount, reason }) {
   return wrap(`
