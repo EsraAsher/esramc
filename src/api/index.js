@@ -1,4 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = import.meta.env.VITE_API_URL
+  || (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? '/api'
+    : 'https://esramc-api.onrender.com/api');
 
 // ─── Helper ───────────────────────────────────────────────
 async function request(url, options = {}) {
