@@ -9,7 +9,7 @@
   --color-light-blue: #6BC6F5;
   --color-pink-accent: #FF6BD6;
   --color-dark-blue: #0F1C2E;
-  --font-pixel: "Press Start 2P", cursive;
+  --font-pixel: "Sora", sans-serif;
 }
 
 @layer utilities {
@@ -26,8 +26,8 @@
   }
   
   .font-pixel {
-    font-family: 'Press Start 2P', cursive;
-    letter-spacing: -1px;
+    font-family: 'Sora', sans-serif;
+    letter-spacing: 0;
   }
 
   .bg-sky-blue {
@@ -81,6 +81,20 @@ body {
   color: #ffffff;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Sora', sans-serif;
+}
+
+nav a,
+nav button,
+button,
+label,
+input,
+select,
+textarea {
+  font-family: 'Inter', sans-serif;
 }
 
 body::before {
