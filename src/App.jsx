@@ -39,7 +39,30 @@ function StorePage() {
   const loadProducts = async () => {
     try {
       const data = await fetchHomepageProducts();
-      setSections(data);
+      const normalizedSections = Array.isArray(data)
+        ? data
+            .map((section, index) => {
+              const collection = section?.collection || {};
+              const products = Array.isArray(section?.products)
+                ? section.products.filter(Boolean)
+                : [];
+
+              return {
+                collection: {
+                  _id: collection?._id || `collection-${index}`,
+                  slug: collection?.slug || `collection-${index}`,
+                  name:
+                    typeof collection?.name === 'string' && collection.name.trim()
+                      ? collection.name
+                      : 'Collection',
+                },
+                products,
+              };
+            })
+            .filter((section) => section.products.length > 0)
+        : [];
+
+      setSections(normalizedSections);
     } catch (err) {
       console.error('Failed to load products:', err);
     } finally {

@@ -5,6 +5,7 @@ const ProductCard = ({ id, title, price, features, image, maxQuantityPerOrder })
   const { addToCart, items } = useCart();
   const [added, setAdded] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const safeFeatures = Array.isArray(features) ? features : [];
 
   const cartItem = items.find((i) => i.id === id);
   const atLimit = maxQuantityPerOrder && cartItem && cartItem.qty >= maxQuantityPerOrder;
@@ -45,7 +46,7 @@ const ProductCard = ({ id, title, price, features, image, maxQuantityPerOrder })
         <h3 className="text-sm sm:text-xl font-bold font-pixel text-white mb-2 sm:mb-4 group-hover:text-red-400 transition-colors">{title}</h3>
         
         <ul className="space-y-1 sm:space-y-2 mb-3 sm:mb-6 text-xs sm:text-sm text-gray-300">
-          {features.map((feature, idx) => (
+          {safeFeatures.map((feature, idx) => (
             <li key={idx} className="flex items-center">
               <span className="text-red-400 mr-2">›</span> {feature}
             </li>
