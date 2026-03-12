@@ -32,3 +32,12 @@ export async function logAction(admin, action, target = '', details = {}, ip = n
     console.error('[AuditLog] Write failed:', err.message);
   }
 }
+
+export async function auditLogger(action, actor, details = {}, ip = null) {
+  const target = details?.title || details?.target || '';
+  const normalizedAdmin = actor && typeof actor === 'object'
+    ? actor
+    : { username: actor, discordId: actor, displayName: actor };
+
+  await logAction(normalizedAdmin, action, target, details, ip);
+}
