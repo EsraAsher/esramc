@@ -55,7 +55,7 @@ const NewsPage = () => {
         ) : (
           <div className="flex flex-col items-center gap-8">
             {news.map((item) => (
-              <NewsPost key={item._id} news={item} />
+              <NewsPost key={item._id} news={item} isPreview={false} />
             ))}
           </div>
         )}

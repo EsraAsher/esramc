@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Heading from '@tiptap/extension-heading';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
@@ -63,6 +64,25 @@ const EditorToolbar = ({ editor }) => {
       >
         H3
       </ToolbarButton>
+
+      <select
+        className="bg-dark-surface border border-white/10 rounded px-2 py-1 text-xs text-gray-200"
+        value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
+        onChange={(e) => {
+          const next = e.target.value;
+          const chain = editor.chain().focus();
+          if (next === 'h1') chain.toggleHeading({ level: 1 }).run();
+          else if (next === 'h2') chain.toggleHeading({ level: 2 }).run();
+          else if (next === 'h3') chain.toggleHeading({ level: 3 }).run();
+          else chain.setParagraph().run();
+        }}
+        title="Block Type"
+      >
+        <option value="p">Paragraph</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+      </select>
 
       <div className="w-px h-5 bg-white/10 mx-0.5" />
 
@@ -169,7 +189,7 @@ const AdminNews = () => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: false,
         bold: {},
         italic: {},
         strike: {},
@@ -181,6 +201,7 @@ const AdminNews = () => {
         blockquote: false,
         horizontalRule: false,
       }),
+      Heading.configure({ levels: [1, 2, 3] }),
       TextStyle,
       Color,
       Link.configure({
