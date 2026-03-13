@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Particles from './components/Particles';
@@ -9,24 +9,25 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CreatorAuthProvider } from './context/CreatorAuthContext';
 import { fetchHomepageProducts } from './api';
-import LandingPage from './pages/LandingPage';
-import HelpPage from './pages/HelpPage';
-import AboutPage from './pages/AboutPage';
-import CollectionPage from './pages/CollectionPage';
-import VotePage from './pages/VotePage';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminCallback from './pages/admin/AdminCallback';
-import TermsPage from './pages/TermsPage';
-import ReferralApplyPage from './pages/ReferralApplyPage';
-import CreatorLoginPage from './pages/CreatorLoginPage';
-import CreatorCallbackPage from './pages/CreatorCallbackPage';
-import CreatorDashboardPage from './pages/CreatorDashboardPage';
-import CreatorProgramPage from './pages/CreatorProgramPage';
 import LimitedTimeDeal from './components/LimitedTimeDeal';
 import AnnouncementBar from './components/AnnouncementBar';
-import NewsPage from './pages/NewsPage';
-import NewsPostPage from './pages/NewsPostPage';
+
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const CollectionPage = lazy(() => import('./pages/CollectionPage'));
+const VotePage = lazy(() => import('./pages/VotePage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const ReferralApplyPage = lazy(() => import('./pages/ReferralApplyPage'));
+const CreatorProgramPage = lazy(() => import('./pages/CreatorProgramPage'));
+const CreatorLoginPage = lazy(() => import('./pages/CreatorLoginPage'));
+const CreatorCallbackPage = lazy(() => import('./pages/CreatorCallbackPage'));
+const CreatorDashboardPage = lazy(() => import('./pages/CreatorDashboardPage'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminCallback = lazy(() => import('./pages/admin/AdminCallback'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const NewsPage = lazy(() => import('./pages/NewsPage'));
+const NewsPostPage = lazy(() => import('./pages/NewsPostPage'));
 
 function StorePage() {
   const [sections, setSections] = useState([]);
@@ -144,40 +145,47 @@ function App() {
             <div className="min-h-screen text-white font-sans selection:bg-neon-purple selection:text-white overflow-x-hidden">
               <Particles />
               <Navbar username={username} />
+              <Suspense
+                fallback={
+                  <div className="min-h-[50vh] flex items-center justify-center">
+                    <div className="text-gray-500 font-pixel text-sm animate-pulse">Loading page...</div>
+                  </div>
+                }
+              >
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/store" element={<StorePage />} />
+                  <Route path="/vote" element={<VotePage />} />
+                  <Route path="/help" element={<HelpPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/collection/:slug" element={<CollectionPage />} />
+                  <Route path="/creators" element={<CreatorProgramPage />} />
+                  <Route path="/apply" element={<ReferralApplyPage />} />
 
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/store" element={<StorePage />} />
-                <Route path="/vote" element={<VotePage />} />
-                <Route path="/help" element={<HelpPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/collection/:slug" element={<CollectionPage />} />
-                <Route path="/creators" element={<CreatorProgramPage />} />
-                <Route path="/apply" element={<ReferralApplyPage />} />
+                  {/* Creator dashboard routes */}
+                  <Route path="/creator/login" element={<CreatorLoginPage />} />
+                  <Route path="/creator/callback" element={<CreatorCallbackPage />} />
+                  <Route path="/creator/dashboard" element={<CreatorDashboardPage />} />
 
-                {/* Creator dashboard routes */}
-                <Route path="/creator/login" element={<CreatorLoginPage />} />
-                <Route path="/creator/callback" element={<CreatorCallbackPage />} />
-                <Route path="/creator/dashboard" element={<CreatorDashboardPage />} />
+                  {/* Hidden admin route */}
+                  <Route path="/admin/callback" element={<AdminCallback />} />
+                  <Route
+                    path="/adminishere"
+                    element={
+                      <AdminRoute>
+                        <AdminDashboard />
+                      </AdminRoute>
+                    }
+                  />
 
-                {/* Hidden admin route */}
-                <Route path="/admin/callback" element={<AdminCallback />} />
-                <Route
-                  path="/adminishere"
-                  element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  }
-                />
+                  <Route path="/news" element={<NewsPage />} />
+                  <Route path="/news/:slug" element={<NewsPostPage />} />
 
-                <Route path="/news" element={<NewsPage />} />
-                <Route path="/news/:slug" element={<NewsPostPage />} />
-
-                {/* Catch-all redirect */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+                  {/* Catch-all redirect */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
 
               <CartDrawer />
               <UsernameModal onClose={setUsername} />
