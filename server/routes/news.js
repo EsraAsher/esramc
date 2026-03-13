@@ -2,6 +2,7 @@ import { Router } from 'express';
 import News from '../models/News.js';
 import authMiddleware from '../middleware/auth.js';
 import { logAction } from '../utils/auditLogger.js';
+import sanitizeHtml from 'sanitize-html';
 
 const router = Router();
 
@@ -15,6 +16,48 @@ const generateSlug = (title) => {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
 };
+
+const sanitizeNewsContent = (rawContent) =>
+  sanitizeHtml(rawContent || '', {
+    allowedTags: [
+      'p',
+      'br',
+      'h1',
+      'h2',
+      'h3',
+      'strong',
+      'b',
+      'em',
+      'i',
+      's',
+      'strike',
+      'del',
+      'ul',
+      'ol',
+      'li',
+      'a',
+      'span',
+      'font',
+      'blockquote',
+    ],
+    allowedAttributes: {
+      a: ['href', 'target', 'rel'],
+      span: ['style'],
+      font: ['color'],
+    },
+    allowedStyles: {
+      span: {
+        color: [/^#(?:[0-9a-fA-F]{3}){1,2}$/, /^rgb\((\s*\d+\s*,){2}\s*\d+\s*\)$/],
+      },
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    transformTags: {
+      a: sanitizeHtml.simpleTransform('a', { target: '_blank', rel: 'noopener noreferrer' }),
+    },
+  });
+
+const hasMeaningfulContent = (html) =>
+  sanitizeHtml(html || '', { allowedTags: [], allowedAttributes: {} }).trim().length > 0;
 
 // ─── Public: Get Active News (Latest) ─────────────────
 router.get('/', async (req, res) => {
@@ -80,6 +123,11 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Title, summary, content, and author are required' });
     }
 
+    const sanitizedContent = sanitizeNewsContent(content);
+    if (!hasMeaningfulContent(sanitizedContent)) {
+      return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
+    }
+
     let slug = generateSlug(title);
     
     // Check for duplicate slug
@@ -92,7 +140,7 @@ router.post('/', authMiddleware, async (req, res) => {
       title: title.trim(),
       slug,
       summary: summary.trim(),
-      content: content.trim(), 
+      content: sanitizedContent,
       image: image ? image.trim() : '',
       author: author.trim(),
       isActive: Boolean(isActive),
@@ -123,6 +171,11 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
+    const sanitizedContent = sanitizeNewsContent(content);
+    if (!hasMeaningfulContent(sanitizedContent)) {
+      return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
+    }
+
     const news = await News.findById(id);
     if (!news) {
       return res.status(404).json({ message: 'News not found' });
@@ -133,7 +186,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (!news.slug) news.slug = generateSlug(title.trim());
     
     news.summary = summary.trim();
-    news.content = content.trim();
+    news.content = sanitizedContent;
     news.image = image ? image.trim() : '';
     news.author = author.trim();
     news.isActive = Boolean(isActive);

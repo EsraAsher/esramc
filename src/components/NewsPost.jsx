@@ -46,7 +46,7 @@ const NewsPost = ({ news, isPreview = true }) => {
           </p>
         ) : (
           <div
-            className="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed"
+            className="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed prose-headings:text-white prose-headings:font-pixel prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-200 prose-a:text-sky-blue hover:prose-a:text-light-blue prose-ul:my-3 prose-ol:my-3 prose-li:my-1"
             dangerouslySetInnerHTML={{ __html: contentToShow }}
           />
         )}

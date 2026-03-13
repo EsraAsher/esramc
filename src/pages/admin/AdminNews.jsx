@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchAllNews, createNews, updateNews, deleteNews } from '../../api';
 
 const AdminNews = () => {
@@ -16,6 +16,7 @@ const AdminNews = () => {
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const editorRef = useRef(null);
 
   useEffect(() => {
     loadNews();
@@ -85,6 +86,38 @@ const AdminNews = () => {
     }
   };
 
+  const applyEditorCommand = (command, value = null) => {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    if (command === 'createLink') {
+      const link = window.prompt('Enter URL (https://...)');
+      if (!link) return;
+      document.execCommand('createLink', false, link);
+      return;
+    }
+    if (command === 'removeFormat') {
+      document.execCommand('removeFormat', false, null);
+      return;
+    }
+    document.execCommand(command, false, value);
+  };
+
+  const handleHeadingChange = (e) => {
+    const value = e.target.value;
+    if (!value) return;
+    applyEditorCommand('formatBlock', value);
+  };
+
+  const handleEditorInput = (e) => {
+    setFormData((prev) => ({ ...prev, content: e.currentTarget.innerHTML }));
+  };
+
+  const handleEditorPaste = (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -102,6 +135,11 @@ const AdminNews = () => {
         setError('');
     }, 3000);
   };
+
+  useEffect(() => {
+    if (!showForm || !editorRef.current) return;
+    editorRef.current.innerHTML = selectedNews?.content || '';
+  }, [showForm, selectedNews]);
 
   return (
     <div className="space-y-6">
@@ -217,14 +255,60 @@ const AdminNews = () => {
               </div>
 
               <div>
-                <label className="block text-gray-400 text-xs mb-1 font-pixel">Full Content</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors h-64 font-mono text-sm"
-                  placeholder="Full article content..."
-                  required
-                />
+                <label className="block text-gray-400 text-xs mb-2 font-pixel">Full Content</label>
+
+                <div className="bg-dark-bg border border-white/10 rounded-lg overflow-hidden">
+                  <div className="p-2 border-b border-white/10 flex flex-wrap items-center gap-2">
+                    <select
+                      className="bg-dark-surface border border-white/10 rounded px-2 py-1 text-xs text-gray-200"
+                      defaultValue=""
+                      onChange={handleHeadingChange}
+                    >
+                      <option value="">Headings</option>
+                      <option value="H1">Large (H1)</option>
+                      <option value="H2">Medium (H2)</option>
+                      <option value="H3">Small (H3)</option>
+                      <option value="P">Paragraph</option>
+                    </select>
+
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('bold')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 font-bold">B</button>
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('italic')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 italic">I</button>
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('strikeThrough')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 line-through">S</button>
+
+                    <label className="flex items-center gap-1 px-2 py-1 border border-white/10 rounded text-xs text-gray-200 bg-dark-surface cursor-pointer">
+                      Color
+                      <input
+                        type="color"
+                        defaultValue="#6BC6F5"
+                        onChange={(e) => applyEditorCommand('foreColor', e.target.value)}
+                        className="w-5 h-5 bg-transparent border-none p-0"
+                        aria-label="Text color"
+                      />
+                    </label>
+
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('insertUnorderedList')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">• List</button>
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('insertOrderedList')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">1. List</button>
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('createLink')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">Link</button>
+                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('removeFormat')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">Clear</button>
+                  </div>
+
+                  <div
+                    ref={editorRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={handleEditorInput}
+                    onPaste={handleEditorPaste}
+                    className="w-full min-h-64 max-h-96 overflow-y-auto p-3 text-white focus:outline-none focus:ring-0 text-sm leading-relaxed"
+                    style={{ whiteSpace: 'pre-wrap' }}
+                    role="textbox"
+                    aria-label="News content editor"
+                  />
+                </div>
+
+                <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. This will be stored as safe HTML.</p>
+                {!formData.content.replace(/<[^>]*>/g, '').trim() && (
+                  <p className="text-[11px] text-red-400 mt-1">Content is required.</p>
+                )}
               </div>
 
               <div>
@@ -248,7 +332,7 @@ const AdminNews = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !formData.content.replace(/<[^>]*>/g, '').trim()}
                   className="px-6 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'Saving...' : (selectedNews ? 'Update News' : 'Create News')}
