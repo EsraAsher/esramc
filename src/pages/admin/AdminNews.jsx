@@ -39,12 +39,25 @@ const AdminNews = () => {
     setError('');
     setSuccess('');
 
+    const editorHtml = editorRef.current?.innerHTML || formData.content || '';
+    const plainEditorText = String(editorHtml).replace(/<[^>]*>/g, '').trim();
+    if (!plainEditorText) {
+      setError('Content is required');
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      content: editorHtml,
+    };
+
     try {
       if (selectedNews) {
-        await updateNews(selectedNews._id, formData);
+        await updateNews(selectedNews._id, payload);
         setSuccess('News updated successfully');
       } else {
-        await createNews(formData);
+        await createNews(payload);
         setSuccess('News created successfully');
       }
       
@@ -106,8 +119,8 @@ const AdminNews = () => {
     applyEditorCommand('formatBlock', value);
   };
 
-  const handleEditorInput = (e) => {
-    setFormData((prev) => ({ ...prev, content: e.currentTarget.innerHTML }));
+  const handleEditorInput = () => {
+    if (error) setError('');
   };
 
   const handleEditorPaste = (e) => {
@@ -288,9 +301,6 @@ const AdminNews = () => {
                 </div>
 
                 <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. This will be stored as safe HTML.</p>
-                {!String(formData.content || '').replace(/<[^>]*>/g, '').trim() && (
-                  <p className="text-[11px] text-red-400 mt-1">Content is required.</p>
-                )}
               </div>
 
               <div>
@@ -314,7 +324,7 @@ const AdminNews = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !String(formData.content || '').replace(/<[^>]*>/g, '').trim()}
+                  disabled={loading}
                   className="px-6 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'Saving...' : (selectedNews ? 'Update News' : 'Create News')}
