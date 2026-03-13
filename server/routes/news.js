@@ -59,12 +59,22 @@ const sanitizeNewsContent = (rawContent) =>
 const hasMeaningfulContent = (html) =>
   sanitizeHtml(html || '', { allowedTags: [], allowedAttributes: {} }).trim().length > 0;
 
+const deriveSummaryFromHtml = (html, maxLength = 300) => {
+  const text = sanitizeHtml(html || '', { allowedTags: [], allowedAttributes: {} })
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
+};
+
 // ─── Public: Get Active News (Latest) ─────────────────
 router.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 = all
     const query = News.find({ isActive: true })
-      .select('title slug summary image author createdAt isActive') // Select fields
+      .select('title slug summary content image author createdAt isActive') // Select fields
       .sort({ createdAt: -1 });
 
     if (limit > 0) {
@@ -117,16 +127,18 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 
   try {
-    const { title, summary, content, image, author, isActive } = req.body;
+    const { title, content, image, author, isActive } = req.body;
     
-    if (!title || !summary || !content || !author) {
-      return res.status(400).json({ message: 'Title, summary, content, and author are required' });
+    if (!title || !content || !author) {
+      return res.status(400).json({ message: 'Title, content, and author are required' });
     }
 
     const sanitizedContent = sanitizeNewsContent(content);
     if (!hasMeaningfulContent(sanitizedContent)) {
       return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
     }
+
+    const summary = deriveSummaryFromHtml(sanitizedContent, 300);
 
     let slug = generateSlug(title);
     
@@ -139,7 +151,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const news = new News({
       title: title.trim(),
       slug,
-      summary: summary.trim(),
+      summary,
       content: sanitizedContent,
       image: image ? image.trim() : '',
       author: author.trim(),
@@ -165,16 +177,18 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { title, summary, content, image, author, isActive } = req.body;
+    const { title, content, image, author, isActive } = req.body;
 
-    if (!title || !summary || !content || !author) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!title || !content || !author) {
+      return res.status(400).json({ message: 'Title, content, and author are required' });
     }
 
     const sanitizedContent = sanitizeNewsContent(content);
     if (!hasMeaningfulContent(sanitizedContent)) {
       return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
     }
+
+    const summary = deriveSummaryFromHtml(sanitizedContent, 300);
 
     const news = await News.findById(id);
     if (!news) {
@@ -185,7 +199,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     // Only update slug if not set, otherwise keep it
     if (!news.slug) news.slug = generateSlug(title.trim());
     
-    news.summary = summary.trim();
+    news.summary = summary;
     news.content = sanitizedContent;
     news.image = image ? image.trim() : '';
     news.author = author.trim();

@@ -8,7 +8,6 @@ const AdminNews = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    summary: '',
     content: '',
     image: '',
     author: '',
@@ -62,7 +61,6 @@ const AdminNews = () => {
     setSelectedNews(newsItem);
     setFormData({
       title: newsItem.title,
-      summary: newsItem.summary || newsItem.description || '', // helper for legacy
       content: newsItem.content || '',
       image: newsItem.image || '',
       author: newsItem.author || '',
@@ -121,7 +119,6 @@ const AdminNews = () => {
   const resetForm = () => {
     setFormData({
       title: '',
-      summary: '',
       content: '',
       image: '',
       author: '',
@@ -240,21 +237,6 @@ const AdminNews = () => {
               </div>
 
               <div>
-                <label className="block text-gray-400 text-xs mb-1 font-pixel">
-                    Summary (Short Description)
-                    <span className="ml-2 text-gray-600 font-sans">{formData.summary.length}/300</span>
-                </label>
-                <textarea
-                  value={formData.summary}
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors h-24 text-sm"
-                  placeholder="Short description for the homepage card (max 300 chars)..."
-                  required
-                  maxLength={300}
-                />
-              </div>
-
-              <div>
                 <label className="block text-gray-400 text-xs mb-2 font-pixel">Full Content</label>
 
                 <div className="bg-dark-bg border border-white/10 rounded-lg overflow-hidden">
@@ -306,7 +288,7 @@ const AdminNews = () => {
                 </div>
 
                 <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. This will be stored as safe HTML.</p>
-                {!formData.content.replace(/<[^>]*>/g, '').trim() && (
+                {!String(formData.content || '').replace(/<[^>]*>/g, '').trim() && (
                   <p className="text-[11px] text-red-400 mt-1">Content is required.</p>
                 )}
               </div>
@@ -332,7 +314,7 @@ const AdminNews = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !formData.content.replace(/<[^>]*>/g, '').trim()}
+                  disabled={loading || !String(formData.content || '').replace(/<[^>]*>/g, '').trim()}
                   className="px-6 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-lg disabled:opacity-50"
                 >
                   {loading ? 'Saving...' : (selectedNews ? 'Update News' : 'Create News')}

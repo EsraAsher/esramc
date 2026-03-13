@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Eye, MessageSquare } from 'lucide-react';
 
 const NewsPost = ({ news, isPreview = true }) => {
-  const { title, content, summary, author, createdAt, slug, views, commentsCount } = news;
+  const { title, content, author, createdAt, slug, views, commentsCount } = news;
 
   const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -10,8 +10,13 @@ const NewsPost = ({ news, isPreview = true }) => {
     day: 'numeric',
   });
 
-  const contentToShow = isPreview ? summary : content;
-  const previewText = String(contentToShow || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const contentToShow = content;
+  const plainContent = String(contentToShow || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const previewLimit = 220;
+  const previewText =
+    plainContent.length > previewLimit
+      ? `${plainContent.slice(0, previewLimit).trim()}...`
+      : plainContent;
 
   return (
     <div

@@ -16,8 +16,8 @@ const newsSchema = new mongoose.Schema({
   },
   summary: {
     type: String,
-    required: true,
     trim: true,
+    default: '',
     maxlength: 300,
   },
   content: {
