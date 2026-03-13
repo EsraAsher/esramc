@@ -217,32 +217,75 @@ body::after {
   color: inherit; /* let the inline style win */
 }
 
-/* ─── News Preview Content (card preview, line-clamped) */
+/* ─── News Preview Content (card preview, line-clamped but styled) */
 .news-preview-content {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  color: #d1d5db;
+  line-height: 1.6;
 }
 
+/* Preserve formatting in preview while keeping inline flow */
 .news-preview-content h1,
 .news-preview-content h2,
 .news-preview-content h3 {
-  display: inline;
-  font-size: inherit;
+  font-size: 1rem;
   font-weight: 800;
   color: #fff;
+  margin: 0 0.25em 0 0;
+  display: inline;
 }
-.news-preview-content strong, .news-preview-content b { font-weight: 700; color: #fff; }
-.news-preview-content em, .news-preview-content i    { font-style: italic; }
-.news-preview-content del, .news-preview-content s   { text-decoration: line-through; }
-.news-preview-content ul, .news-preview-content ol   { display: inline; list-style: none; padding: 0; margin: 0; }
-.news-preview-content li   { display: inline; }
-.news-preview-content li::after { content: ' · '; color: #6b7280; }
-.news-preview-content li:last-child::after { content: ''; }
-.news-preview-content p    { display: inline; margin: 0; }
-.news-preview-content a    { color: #3AA7E3; }
+.news-preview-content strong, .news-preview-content b { 
+  font-weight: 700; 
+  color: #fff; 
+}
+.news-preview-content em, .news-preview-content i { 
+  font-style: italic; 
+  color: #e5e7eb;
+}
+.news-preview-content del, .news-preview-content s { 
+  text-decoration: line-through; 
+  color: #9ca3af;
+}
+.news-preview-content ul, .news-preview-content ol { 
+  display: inline; 
+  list-style: none; 
+  padding: 0; 
+  margin: 0; 
+}
+.news-preview-content li { 
+  display: inline; 
+  color: #d1d5db;
+}
+.news-preview-content li::after { 
+  content: ' · '; 
+  color: #6b7280; 
+  margin: 0 0.25em;
+}
+.news-preview-content li:last-child::after { 
+  content: ''; 
+}
+.news-preview-content p { 
+  display: inline; 
+  margin: 0 0.25em 0 0; 
+  color: #d1d5db;
+}
+.news-preview-content a { 
+  color: #3AA7E3; 
+  text-decoration: underline;
+}
+
+/* Preserve inline color styles in preview */
+.news-preview-content span[style*="color"],
+.news-preview-content h1[style*="color"],
+.news-preview-content h2[style*="color"],
+.news-preview-content h3[style*="color"],
+.news-preview-content p[style*="color"] {
+  color: inherit;
+}
 
 
 /* Custom Scrollbar */
