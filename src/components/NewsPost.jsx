@@ -16,9 +16,7 @@ const NewsPost = ({ news, isPreview = true }) => {
 
   return (
     <div
-      className={`bg-dark-blue border border-white/10 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.28)] w-full max-w-275 mx-auto overflow-hidden ${
-        isPreview ? 'min-h-30 max-h-55' : ''
-      }`}
+      className={`bg-dark-blue border border-white/10 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.28)] w-full max-w-275 mx-auto overflow-hidden`}
     >
       <div className={`p-4 md:p-5 ${isPreview ? 'h-full flex flex-col' : ''}`}>
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-2 md:gap-4 mb-3">

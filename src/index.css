@@ -217,15 +217,25 @@ body::after {
   color: inherit; /* let the inline style win */
 }
 
-/* ─── News Preview Content (card preview, line-clamped but styled) */
+/* ─── News Preview Content (70% cutoff with gradient fade) */
 .news-preview-content {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  max-height: 320px;
   overflow: hidden;
   color: #d1d5db;
   line-height: 1.6;
+  position: relative;
+}
+
+/* Gradient fade at bottom when content is cut off */
+.news-preview-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent 0%, #0F1C2E 100%);
+  pointer-events: none;
 }
 
 /* Preserve formatting in preview while keeping inline flow */
