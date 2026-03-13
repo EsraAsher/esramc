@@ -211,7 +211,7 @@ const Navbar = ({ username }) => {
   /* ═══════════════════ DEFAULT NAVBAR (non-store) ═══════════════════ */
   return (
     <nav className={`${isHomepage ? 'absolute' : 'fixed'} w-full z-40 top-0 left-0 p-3 sm:p-4 md:p-6 transition-all duration-300 ${scrolled ? 'bg-dark-bg/70 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.5)]' : 'bg-transparent'}`}>
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <div className="max-w-7xl mx-auto flex justify-between items-center relative">
         <div className="flex items-center gap-3">
           <div className="relative md:hidden" ref={mobileDropdownRef}>
             <button
@@ -226,15 +226,15 @@ const Navbar = ({ username }) => {
 
             {moreOpen && (
               <div className="absolute top-full left-0 mt-3 w-52 bg-dark-surface border border-sky-blue/30 rounded-lg shadow-[0_0_20px_rgba(58,167,227,0.15)] overflow-hidden">
-                <Link to="/store" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
-                  🛒 STORE
-                </Link>
                 <Link to="/vote" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
                   🗳️ VOTE
                 </Link>
-                <a href="https://discord.gg/wBNMMj2PE4" target="_blank" rel="noopener noreferrer" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm" onClick={() => setMoreOpen(false)}>
-                  💬 DISCORD ↗
-                </a>
+                <Link to="/help" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
+                  🎫 HELP
+                </Link>
+                <Link to="/terms" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm" onClick={() => setMoreOpen(false)}>
+                  📜 TERMS
+                </Link>
               </div>
             )}
           </div>
@@ -251,10 +251,10 @@ const Navbar = ({ username }) => {
           )}
         </div>
 
-        <div className="hidden md:flex gap-8 font-pixel text-xs text-gray-300 items-center">
+        <div className="hidden md:flex gap-8 font-pixel text-xs text-gray-300 items-center absolute left-1/2 -translate-x-1/2">
           <Link to="/vote" className="hover:text-sky-blue transition-colors">VOTE</Link>
-          <Link to="/store" className="hover:text-sky-blue transition-colors">STORE</Link>
-          <a href="https://discord.gg/wBNMMj2PE4" target="_blank" rel="noopener noreferrer" className="hover:text-sky-blue transition-colors">DISCORD</a>
+          <Link to="/help" className="hover:text-sky-blue transition-colors">HELP</Link>
+          <Link to="/terms" className="hover:text-sky-blue transition-colors">TERMS</Link>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
