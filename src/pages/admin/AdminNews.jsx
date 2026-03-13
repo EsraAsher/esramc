@@ -116,7 +116,8 @@ const AdminNews = () => {
   const handleHeadingChange = (e) => {
     const value = e.target.value;
     if (!value) return;
-    applyEditorCommand('formatBlock', value);
+    applyEditorCommand('formatBlock', `<${value}>`);
+    e.target.value = '';
   };
 
   const handleEditorInput = () => {
@@ -258,12 +259,13 @@ const AdminNews = () => {
                       className="bg-dark-surface border border-white/10 rounded px-2 py-1 text-xs text-gray-200"
                       defaultValue=""
                       onChange={handleHeadingChange}
+                      onMouseDown={(e) => e.preventDefault()}
                     >
                       <option value="">Headings</option>
-                      <option value="H1">Large (H1)</option>
-                      <option value="H2">Medium (H2)</option>
-                      <option value="H3">Small (H3)</option>
-                      <option value="P">Paragraph</option>
+                      <option value="h1">Large (H1)</option>
+                      <option value="h2">Medium (H2)</option>
+                      <option value="h3">Small (H3)</option>
+                      <option value="p">Paragraph</option>
                     </select>
 
                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('bold')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 font-bold">B</button>
