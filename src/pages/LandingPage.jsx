@@ -30,8 +30,8 @@ const LandingPage = () => {
   return (
     <main className="relative z-10 w-full">
       {/* ═══════════════════ HERO SECTION ═══════════════════ */}
-      <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="relative z-10 flex items-center justify-center w-full px-4 mt-12 sm:mt-16">
+      <div className="relative flex items-center justify-center overflow-hidden pt-14 sm:pt-16">
+        <div className="relative z-10 flex items-center justify-center w-full px-4">
 
           {/* ─── Left Widget: Server IP (desktop only) ─── */}
           <div
@@ -82,7 +82,7 @@ const LandingPage = () => {
       </div>
 
       {/* ═══════════════════ ANNOUNCEMENT BANNER ═══════════════════ */}
-      <section className="px-4">
+      <section className="px-4 mt-5 md:mt-7">
         <div className="max-w-275 mx-auto">
           <div
             className="w-full min-h-30 max-h-55 px-4 md:px-5 py-4 md:py-5 bg-dark-blue border border-white/10 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.28)] overflow-hidden"
@@ -127,7 +127,7 @@ const LandingPage = () => {
 
 
       {/* ═══════════════════ LATEST NEWS ═══════════════════ */}
-      <section className="py-16 px-4">
+      <section className="pt-6 md:pt-8 pb-16 px-4">
         <div className="max-w-6xl mx-auto">
           {latestNews ? (
             <div className="flex justify-center">
