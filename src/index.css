@@ -170,7 +170,62 @@ body::after {
   animation: marquee 20s linear infinite;
 }
 
-/* News Preview Content — styled HTML inside card preview */
+/* ─── TipTap Editor Styles (Admin editor area) ─────── */
+.tiptap-editor:focus {
+  outline: none;
+}
+
+.tiptap-editor h1 { font-size: 1.6rem; font-weight: 800; line-height: 1.3; margin: 0.5em 0; color: #fff; }
+.tiptap-editor h2 { font-size: 1.3rem; font-weight: 700; line-height: 1.3; margin: 0.5em 0; color: #fff; }
+.tiptap-editor h3 { font-size: 1.1rem; font-weight: 700; line-height: 1.3; margin: 0.4em 0; color: #fff; }
+.tiptap-editor p  { margin: 0.3em 0; }
+
+.tiptap-editor ul { list-style: disc;    padding-left: 1.5em; margin: 0.4em 0; }
+.tiptap-editor ol { list-style: decimal; padding-left: 1.5em; margin: 0.4em 0; }
+.tiptap-editor li { margin: 0.2em 0; }
+
+.tiptap-editor strong { font-weight: 700; color: #fff; }
+.tiptap-editor em     { font-style: italic; }
+.tiptap-editor del    { text-decoration: line-through; }
+.tiptap-editor a      { color: #3AA7E3; text-decoration: underline; }
+
+/* Colors via TextStyle/Color extension render via inline style — no override needed */
+
+/* ─── News Full-View Render Styles ─────────────────── */
+.news-render-content h1 { font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0.75em 0 0.4em; line-height: 1.25; }
+.news-render-content h2 { font-size: 1.4rem;  font-weight: 700; color: #fff; margin: 0.6em 0 0.35em; line-height: 1.3; }
+.news-render-content h3 { font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0.5em 0 0.3em;  line-height: 1.3; }
+.news-render-content p  { color: #d1d5db; margin: 0.4em 0; line-height: 1.7; }
+
+.news-render-content ul { list-style: disc;    padding-left: 1.6em; margin: 0.5em 0; }
+.news-render-content ol { list-style: decimal; padding-left: 1.6em; margin: 0.5em 0; }
+.news-render-content li { color: #d1d5db; margin: 0.25em 0; line-height: 1.6; }
+
+.news-render-content strong { font-weight: 700; color: #fff; }
+.news-render-content em     { font-style: italic; color: #e5e7eb; }
+.news-render-content del    { text-decoration: line-through; color: #9ca3af; }
+.news-render-content a      { color: #3AA7E3; text-decoration: underline; }
+.news-render-content a:hover { color: #6BC6F5; }
+.news-render-content br     { display: block; margin: 0.2em 0; content: ''; }
+
+/* Inline color spans — must not be overridden */
+.news-render-content span[style*="color"],
+.news-render-content h1[style*="color"],
+.news-render-content h2[style*="color"],
+.news-render-content h3[style*="color"],
+.news-render-content p[style*="color"] {
+  color: inherit; /* let the inline style win */
+}
+
+/* ─── News Preview Content (card preview, line-clamped) */
+.news-preview-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .news-preview-content h1,
 .news-preview-content h2,
 .news-preview-content h3 {
@@ -179,48 +234,16 @@ body::after {
   font-weight: 800;
   color: #fff;
 }
+.news-preview-content strong, .news-preview-content b { font-weight: 700; color: #fff; }
+.news-preview-content em, .news-preview-content i    { font-style: italic; }
+.news-preview-content del, .news-preview-content s   { text-decoration: line-through; }
+.news-preview-content ul, .news-preview-content ol   { display: inline; list-style: none; padding: 0; margin: 0; }
+.news-preview-content li   { display: inline; }
+.news-preview-content li::after { content: ' · '; color: #6b7280; }
+.news-preview-content li:last-child::after { content: ''; }
+.news-preview-content p    { display: inline; margin: 0; }
+.news-preview-content a    { color: #3AA7E3; }
 
-.news-preview-content strong,
-.news-preview-content b {
-  color: #fff;
-  font-weight: 700;
-}
-
-.news-preview-content em,
-.news-preview-content i {
-  font-style: italic;
-}
-
-.news-preview-content del,
-.news-preview-content s {
-  text-decoration: line-through;
-}
-
-.news-preview-content ul,
-.news-preview-content ol {
-  display: inline;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.news-preview-content li {
-  display: inline;
-}
-
-.news-preview-content li::after {
-  content: ' ';
-}
-
-.news-preview-content p {
-  display: inline;
-  margin: 0;
-}
-
-.news-preview-content a {
-  color: #3AA7E3;
-  text-decoration: underline;
-}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {

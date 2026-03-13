@@ -1,14 +1,12 @@
 /**
- * News content utilities.
- * Converts structured JSON content to HTML and provides rendering helpers.
- * NO frontend sanitization — backend already sanitizes all content.
+ * News content rendering utilities.
+ * TipTap outputs HTML directly, so new posts (contentType='html') render as-is.
+ * Legacy JSON posts (contentType='json') are converted to HTML for backward compat.
+ * No frontend sanitization — backend sanitizes all stored content.
  */
 
-// ─── JSON → HTML Converter ──────────────────────────────
+// ─── Legacy JSON → HTML Converter ──────────────────────────
 
-/**
- * Convert a text node (with formatting properties) to an HTML string.
- */
 function textNodeToHtml(node) {
   if (!node || typeof node.text !== 'string') return '';
 
@@ -17,42 +15,25 @@ function textNodeToHtml(node) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Apply inline formatting
   if (node.bold) html = `<strong>${html}</strong>`;
   if (node.italic) html = `<em>${html}</em>`;
   if (node.strike) html = `<del>${html}</del>`;
-
-  // Apply color via inline style on span
-  if (node.color) {
-    html = `<span style="color:${node.color};">${html}</span>`;
-  }
-
-  // Wrap in link
-  if (node.link) {
-    html = `<a href="${node.link}" target="_blank" rel="noopener noreferrer">${html}</a>`;
-  }
+  if (node.color) html = `<span style="color:${node.color};">${html}</span>`;
+  if (node.link) html = `<a href="${node.link}" target="_blank" rel="noopener noreferrer">${html}</a>`;
 
   return html;
 }
 
-/**
- * Convert an array of child nodes to HTML.
- */
 function childrenToHtml(children) {
   if (!Array.isArray(children)) return '';
   return children.map(textNodeToHtml).join('');
 }
 
-/**
- * Convert structured JSON blocks to an HTML string.
- * @param {Array} blocks - array of block objects
- * @returns {string} HTML string
- */
 export function jsonToHtml(blocks) {
   if (!Array.isArray(blocks)) return '';
 
   return blocks.map((block) => {
-    if (!block || !block.type) return '';
+    if (!block?.type) return '';
 
     switch (block.type) {
       case 'h1':
@@ -60,10 +41,7 @@ export function jsonToHtml(blocks) {
       case 'h3':
       case 'p': {
         const inner = childrenToHtml(block.children);
-        // Check if any child has a color — apply to the block tag
-        const blockColor = block.children?.find((c) => c.color)?.color;
-        const style = blockColor ? ` style="color:${blockColor};"` : '';
-        return `<${block.type}${style}>${inner}</${block.type}>`;
+        return `<${block.type}>${inner}</${block.type}>`;
       }
       case 'ul':
       case 'ol': {
@@ -79,11 +57,14 @@ export function jsonToHtml(blocks) {
   }).join('');
 }
 
+// ─── Main Renderer ──────────────────────────────────────────
+
 /**
- * Get the rendered HTML content for a news item.
- * Dispatches based on contentType: json → convert, html → use directly.
+ * Get the rendered HTML for a news item.
+ * - contentType 'html': return the stored HTML string directly (TipTap output or legacy)
+ * - contentType 'json': convert legacy JSON blocks to HTML
  * @param {object} newsItem
- * @returns {string} HTML string ready for dangerouslySetInnerHTML
+ * @returns {string}
  */
 export function getRenderedContent(newsItem) {
   if (!newsItem) return '';
@@ -91,11 +72,11 @@ export function getRenderedContent(newsItem) {
   const { content, contentType } = newsItem;
 
   if (contentType === 'json') {
-    // content is a native JSON array of blocks
+    // Legacy structured JSON format
     const blocks = Array.isArray(content) ? content : [];
     return jsonToHtml(blocks);
   }
 
-  // Legacy HTML (or no contentType set) — render directly
+  // HTML (TipTap output or legacy HTML string)
   return typeof content === 'string' ? content : '';
 }

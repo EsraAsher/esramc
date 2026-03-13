@@ -1,7 +1,156 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import Link from '@tiptap/extension-link';
 import { fetchAllNews, createNews, updateNews, deleteNews } from '../../api';
 import { jsonToHtml } from '../../utils/newsUtils';
 
+// ─── Toolbar Button ───────────────────────────────────────
+const ToolbarButton = ({ onClick, active, title, children, className = '' }) => (
+  <button
+    type="button"
+    onMouseDown={(e) => e.preventDefault()}
+    onClick={onClick}
+    title={title}
+    className={`px-2 py-1 border rounded text-xs transition-colors ${
+      active
+        ? 'bg-sky-blue/30 border-sky-blue/60 text-sky-blue'
+        : 'border-white/10 text-gray-200 hover:bg-white/10'
+    } ${className}`}
+  >
+    {children}
+  </button>
+);
+
+// ─── Editor Toolbar ───────────────────────────────────────
+const EditorToolbar = ({ editor }) => {
+  if (!editor) return null;
+
+  const setLink = useCallback(() => {
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('Enter URL (https://...)', previousUrl);
+    if (url === null) return;
+    if (url === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  }, [editor]);
+
+  return (
+    <div className="p-2 border-b border-white/10 flex flex-wrap items-center gap-1.5">
+      {/* Headings */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        active={editor.isActive('heading', { level: 1 })}
+        title="Heading 1"
+      >
+        H1
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        active={editor.isActive('heading', { level: 2 })}
+        title="Heading 2"
+      >
+        H2
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        active={editor.isActive('heading', { level: 3 })}
+        title="Heading 3"
+      >
+        H3
+      </ToolbarButton>
+
+      <div className="w-px h-5 bg-white/10 mx-0.5" />
+
+      {/* Inline Formatting */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        active={editor.isActive('bold')}
+        title="Bold"
+        className="font-bold"
+      >
+        B
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        active={editor.isActive('italic')}
+        title="Italic"
+        className="italic"
+      >
+        I
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        active={editor.isActive('strike')}
+        title="Strikethrough"
+        className="line-through"
+      >
+        S
+      </ToolbarButton>
+
+      <div className="w-px h-5 bg-white/10 mx-0.5" />
+
+      {/* Text Color */}
+      <label
+        className="flex items-center gap-1 px-2 py-1 border border-white/10 rounded text-xs text-gray-200 bg-dark-surface cursor-pointer hover:bg-white/10 transition-colors"
+        title="Text Color"
+      >
+        Color
+        <input
+          type="color"
+          defaultValue="#6BC6F5"
+          onMouseDown={(e) => e.stopPropagation()}
+          onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+          className="w-5 h-5 bg-transparent border-none p-0 cursor-pointer"
+          aria-label="Text color"
+        />
+      </label>
+
+      <div className="w-px h-5 bg-white/10 mx-0.5" />
+
+      {/* Lists */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        active={editor.isActive('bulletList')}
+        title="Bullet List"
+      >
+        • List
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        active={editor.isActive('orderedList')}
+        title="Numbered List"
+      >
+        1. List
+      </ToolbarButton>
+
+      <div className="w-px h-5 bg-white/10 mx-0.5" />
+
+      {/* Link */}
+      <ToolbarButton
+        onClick={setLink}
+        active={editor.isActive('link')}
+        title="Insert Link"
+      >
+        Link
+      </ToolbarButton>
+
+      {/* Clear Formatting */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
+        title="Clear Formatting"
+      >
+        Clear
+      </ToolbarButton>
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────
 const AdminNews = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -9,18 +158,70 @@ const AdminNews = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    content: '',
     image: '',
     author: '',
     isActive: true,
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const editorRef = useRef(null);
 
+  // ─── TipTap Editor ─────────────────────────────────────
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+        bold: {},
+        italic: {},
+        strike: {},
+        bulletList: {},
+        orderedList: {},
+        listItem: {},
+        code: false,
+        codeBlock: false,
+        blockquote: false,
+        horizontalRule: false,
+      }),
+      TextStyle,
+      Color,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        },
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class:
+          'w-full min-h-64 max-h-96 overflow-y-auto p-3 text-white focus:outline-none text-sm leading-relaxed tiptap-editor',
+      },
+    },
+    content: '',
+  });
+
+  // ─── Load initial news list ─────────────────────────────
   useEffect(() => {
     loadNews();
   }, []);
+
+  // ─── Populate editor when form opens ───────────────────
+  useEffect(() => {
+    if (!editor) return;
+    if (showForm) {
+      if (selectedNews) {
+        // Load existing content into editor
+        const content = selectedNews.contentType === 'json'
+          ? jsonToHtml(Array.isArray(selectedNews.content) ? selectedNews.content : [])
+          : (typeof selectedNews.content === 'string' ? selectedNews.content : '');
+        editor.commands.setContent(content, false);
+      } else {
+        editor.commands.setContent('', false);
+      }
+      // Focus after a short tick to let the modal render
+      setTimeout(() => editor.commands.focus(), 50);
+    }
+  }, [showForm, selectedNews, editor]);
 
   const loadNews = async () => {
     setLoading(true);
@@ -34,272 +235,18 @@ const AdminNews = () => {
     }
   };
 
-  // ─── DOM → Structured JSON Serializer ──────────────────
-  const serializeEditor = () => {
-    const editor = editorRef.current;
-    if (!editor) return [];
-
-    const blocks = [];
-    const children = editor.childNodes;
-
-    // Helper: serialize inline content of a node to text-node array
-    const serializeInline = (node) => {
-      const result = [];
-
-      const walk = (el, inherited) => {
-        if (el.nodeType === Node.TEXT_NODE) {
-          const text = el.textContent;
-          if (text) {
-            result.push({ text, ...inherited });
-          }
-          return;
-        }
-
-        if (el.nodeType !== Node.ELEMENT_NODE) return;
-
-        const tag = el.tagName?.toLowerCase();
-        const props = { ...inherited };
-
-        if (tag === 'strong' || tag === 'b') props.bold = true;
-        if (tag === 'em' || tag === 'i') props.italic = true;
-        if (tag === 'del' || tag === 's' || tag === 'strike') props.strike = true;
-        if (tag === 'a' && el.href) props.link = el.href;
-
-        // Color from <span style> or <font color>
-        if (tag === 'span' && el.style?.color) {
-          props.color = el.style.color;
-        }
-        if (tag === 'font' && el.getAttribute('color')) {
-          props.color = el.getAttribute('color');
-        }
-
-        for (const child of el.childNodes) {
-          walk(child, props);
-        }
-      };
-
-      walk(node, {});
-      return result.length > 0 ? result : [{ text: '' }];
-    };
-
-    // Normalize: if the editor has no block-level elements, wrap everything in <p>
-    const isBlockTag = (tag) => ['P', 'H1', 'H2', 'H3', 'UL', 'OL', 'DIV', 'BLOCKQUOTE'].includes(tag);
-
-    for (const child of children) {
-      if (child.nodeType === Node.TEXT_NODE) {
-        const text = child.textContent.trim();
-        if (text) {
-          blocks.push({ type: 'p', children: [{ text }] });
-        }
-        continue;
-      }
-
-      if (child.nodeType !== Node.ELEMENT_NODE) continue;
-
-      const tag = child.tagName;
-
-      if (tag === 'UL' || tag === 'OL') {
-        const items = [];
-        for (const li of child.querySelectorAll('li')) {
-          items.push({ type: 'li', children: serializeInline(li) });
-        }
-        if (items.length > 0) {
-          blocks.push({ type: tag.toLowerCase(), children: items });
-        }
-        continue;
-      }
-
-      if (tag === 'BR') {
-        // Skip standalone <br> or add empty paragraph
-        continue;
-      }
-
-      // Map to allowed block types
-      let blockType = 'p';
-      if (tag === 'H1') blockType = 'h1';
-      else if (tag === 'H2') blockType = 'h2';
-      else if (tag === 'H3') blockType = 'h3';
-      else if (!isBlockTag(tag)) {
-        // Inline element at top level — wrap in p
-        blockType = 'p';
-      }
-
-      const inlineChildren = serializeInline(child);
-      // Clean up: remove empty trailing text nodes
-      const cleanChildren = inlineChildren.filter((n, i) =>
-        n.text !== '' || i < inlineChildren.length - 1
-      );
-
-      if (cleanChildren.length > 0) {
-        blocks.push({ type: blockType, children: cleanChildren });
-      }
-    }
-
-    return blocks;
-  };
-
-  // ─── JSON → Editor HTML (for editing existing posts) ───
-  const contentToEditorHtml = (newsItem) => {
-    if (!newsItem) return '';
-    if (newsItem.contentType === 'json' && Array.isArray(newsItem.content)) {
-      return jsonToHtml(newsItem.content);
-    }
-    // Legacy HTML
-    return typeof newsItem.content === 'string' ? newsItem.content : '';
-  };
-
-  // ─── Custom Color Command ────────────────────────────
-  const applyColor = (color) => {
-    const editor = editorRef.current;
-    if (!editor) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor.contains(range.commonAncestorContainer)) return;
-
-    if (range.collapsed) return; // no text selected
-
-    // Wrap selection in a span with color style
-    const span = document.createElement('span');
-    span.style.color = color;
-
-    try {
-      range.surroundContents(span);
-    } catch {
-      // If selection crosses element boundaries, use execCommand as fallback
-      // then fix the output
-      document.execCommand('foreColor', false, color);
-      // Convert any <font> tags the browser may have created
-      const fonts = editor.querySelectorAll('font[color]');
-      fonts.forEach((font) => {
-        const replacement = document.createElement('span');
-        replacement.style.color = font.getAttribute('color');
-        replacement.innerHTML = font.innerHTML;
-        font.replaceWith(replacement);
-      });
-    }
-
-    selection.removeAllRanges();
-  };
-
-  // ─── Editor Commands ──────────────────────────────────
-  const applyEditorCommand = (command, value = null) => {
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-    if (command === 'createLink') {
-      const link = window.prompt('Enter URL (https://...)');
-      if (!link) return;
-      document.execCommand('createLink', false, link);
-      return;
-    }
-    if (command === 'removeFormat') {
-      document.execCommand('removeFormat', false, null);
-      return;
-    }
-    document.execCommand(command, false, value);
-  };
-
-  const handleHeadingChange = (e) => {
-    const value = e.target.value;
-    if (!value) return;
-    editorRef.current?.focus();
-    document.execCommand('formatBlock', false, `<${value}>`);
-    e.target.value = '';
-  };
-
-  const handleEditorInput = () => {
-    if (error) setError('');
-  };
-
-  // ─── Paste Sanitization ───────────────────────────────
-  const handleEditorPaste = (e) => {
-    e.preventDefault();
-    const clipboardData = e.clipboardData;
-
-    // Try to get HTML first, then sanitize it
-    let html = clipboardData.getData('text/html');
-
-    if (html) {
-      // Strip external styles, class attributes, data attributes, scripts
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
-
-      // Remove all style tags, script tags, meta tags
-      temp.querySelectorAll('style, script, meta, link').forEach((el) => el.remove());
-
-      // Walk all elements and clean attributes
-      temp.querySelectorAll('*').forEach((el) => {
-        // Remove class, id, data-* attributes
-        const attrs = [...el.attributes];
-        for (const attr of attrs) {
-          const name = attr.name.toLowerCase();
-          if (name === 'class' || name === 'id' || name.startsWith('data-')) {
-            el.removeAttribute(attr.name);
-          }
-          // Remove style except color
-          if (name === 'style') {
-            const color = el.style.color;
-            const fontWeight = el.style.fontWeight;
-            const fontStyle = el.style.fontStyle;
-            el.removeAttribute('style');
-            if (color) el.style.color = color;
-            if (fontWeight === 'bold' || parseInt(fontWeight) >= 700) el.style.fontWeight = 'bold';
-            if (fontStyle === 'italic') el.style.fontStyle = 'italic';
-          }
-        }
-
-        // Convert unsupported tags to spans or remove them
-        const tag = el.tagName.toLowerCase();
-        const allowed = ['p', 'br', 'h1', 'h2', 'h3', 'strong', 'b', 'em', 'i', 'del', 's',
-          'ul', 'ol', 'li', 'a', 'span', 'div'];
-        if (!allowed.includes(tag)) {
-          // Replace with its inner content
-          const fragment = document.createDocumentFragment();
-          while (el.firstChild) fragment.appendChild(el.firstChild);
-          el.replaceWith(fragment);
-        }
-      });
-
-      // Convert <font> to <span>
-      temp.querySelectorAll('font').forEach((font) => {
-        const span = document.createElement('span');
-        if (font.getAttribute('color')) {
-          span.style.color = font.getAttribute('color');
-        }
-        span.innerHTML = font.innerHTML;
-        font.replaceWith(span);
-      });
-
-      // Insert the cleaned HTML
-      const cleaned = temp.innerHTML;
-      document.execCommand('insertHTML', false, cleaned);
-    } else {
-      // Plain text fallback
-      const text = clipboardData.getData('text/plain');
-      document.execCommand('insertText', false, text);
-    }
-  };
-
-  // ─── Form Handling ────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!editor) return;
+
     setLoading(true);
     setError('');
     setSuccess('');
 
-    // Serialize editor DOM to structured JSON
-    const blocks = serializeEditor();
+    const htmlContent = editor.getHTML();
+    const plainText = editor.getText().trim();
 
-    // Check for meaningful content
-    const hasText = blocks.some((block) => {
-      const checkChildren = (children) =>
-        children?.some((c) => (c.text && c.text.trim()) || checkChildren(c.children));
-      return checkChildren(block.children);
-    });
-
-    if (!hasText) {
+    if (!plainText) {
       setError('Content is required');
       setLoading(false);
       return;
@@ -307,8 +254,8 @@ const AdminNews = () => {
 
     const payload = {
       title: formData.title,
-      content: blocks,
-      contentType: 'json',
+      content: htmlContent,
+      contentType: 'html',
       image: formData.image,
       author: formData.author,
       isActive: formData.isActive,
@@ -322,7 +269,6 @@ const AdminNews = () => {
         await createNews(payload);
         setSuccess('News created successfully');
       }
-      
       resetForm();
       await loadNews();
     } catch (err) {
@@ -336,7 +282,6 @@ const AdminNews = () => {
     setSelectedNews(newsItem);
     setFormData({
       title: newsItem.title,
-      content: newsItem.content || '',
       image: newsItem.image || '',
       author: newsItem.author || '',
       isActive: newsItem.isActive,
@@ -346,7 +291,6 @@ const AdminNews = () => {
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this news item?')) return;
-    
     setLoading(true);
     try {
       await deleteNews(id);
@@ -360,26 +304,15 @@ const AdminNews = () => {
   };
 
   const resetForm = () => {
-    setFormData({
-      title: '',
-      content: '',
-      image: '',
-      author: '',
-      isActive: true,
-    });
+    setFormData({ title: '', image: '', author: '', isActive: true });
     setSelectedNews(null);
     setShowForm(false);
-    // clear notifications after a while
+    editor?.commands.setContent('', false);
     setTimeout(() => {
-        setSuccess('');
-        setError('');
+      setSuccess('');
+      setError('');
     }, 3000);
   };
-
-  useEffect(() => {
-    if (!showForm || !editorRef.current) return;
-    editorRef.current.innerHTML = contentToEditorHtml(selectedNews);
-  }, [showForm, selectedNews]);
 
   return (
     <div className="space-y-6">
@@ -399,13 +332,12 @@ const AdminNews = () => {
 
       {/* Notifications */}
       {success && (
-        <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm animate-pulse">
+        <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm">
           {success}
         </div>
       )}
-
       {error && (
-        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm animate-pulse">
+        <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
           {error}
         </div>
       )}
@@ -418,15 +350,13 @@ const AdminNews = () => {
               <h2 className="text-lg font-bold text-white font-pixel">
                 {selectedNews ? 'Edit News' : 'Create News'}
               </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
+              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-white transition-colors">
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Title */}
               <div>
                 <label className="block text-gray-400 text-xs mb-1 font-pixel">Title</label>
                 <input
@@ -439,6 +369,7 @@ const AdminNews = () => {
                 />
               </div>
 
+              {/* Author + Status */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-400 text-xs mb-1 font-pixel">Author (MC Username)</label>
@@ -453,11 +384,11 @@ const AdminNews = () => {
                     />
                     {formData.author && (
                       <div className="w-10 h-10 bg-dark-bg border border-white/10 rounded overflow-hidden shrink-0">
-                         <img 
-                            src={`https://mc-heads.net/avatar/${formData.author}`} 
-                            alt="Head" 
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.src = `https://mc-heads.net/avatar/Steve` }}
+                        <img
+                          src={`https://mc-heads.net/avatar/${formData.author}`}
+                          alt="Head"
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = 'https://mc-heads.net/avatar/Steve'; }}
                         />
                       </div>
                     )}
@@ -465,75 +396,35 @@ const AdminNews = () => {
                 </div>
 
                 <div>
-                   <label className="block text-gray-400 text-xs mb-1 font-pixel">Status</label>
-                   <div className="flex items-center gap-3 p-3 bg-dark-bg border border-white/10 rounded-lg h-11.5">
-                       <input
-                         type="checkbox"
-                         id="isActive"
-                         checked={formData.isActive}
-                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                         className="rounded text-sky-blue focus:ring-sky-blue bg-dark-surface border-white/20 w-4 h-4 cursor-pointer"
-                       />
-                       <label htmlFor="isActive" className="text-sm text-gray-300 cursor-pointer select-none">Active / Published</label>
-                   </div>
+                  <label className="block text-gray-400 text-xs mb-1 font-pixel">Status</label>
+                  <div className="flex items-center gap-3 p-3 bg-dark-bg border border-white/10 rounded-lg h-11.5">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      className="rounded text-sky-blue focus:ring-sky-blue bg-dark-surface border-white/20 w-4 h-4 cursor-pointer"
+                    />
+                    <label htmlFor="isActive" className="text-sm text-gray-300 cursor-pointer select-none">
+                      Active / Published
+                    </label>
+                  </div>
                 </div>
               </div>
 
+              {/* Content Editor */}
               <div>
                 <label className="block text-gray-400 text-xs mb-2 font-pixel">Full Content</label>
-
                 <div className="bg-dark-bg border border-white/10 rounded-lg overflow-hidden">
-                  <div className="p-2 border-b border-white/10 flex flex-wrap items-center gap-2">
-                    <select
-                      className="bg-dark-surface border border-white/10 rounded px-2 py-1 text-xs text-gray-200"
-                      defaultValue=""
-                      onChange={handleHeadingChange}
-                    >
-                      <option value="">Headings</option>
-                      <option value="h1">Large (H1)</option>
-                      <option value="h2">Medium (H2)</option>
-                      <option value="h3">Small (H3)</option>
-                      <option value="p">Paragraph</option>
-                    </select>
-
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('bold')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 font-bold">B</button>
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('italic')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 italic">I</button>
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('strikeThrough')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10 line-through">S</button>
-
-                    <label className="flex items-center gap-1 px-2 py-1 border border-white/10 rounded text-xs text-gray-200 bg-dark-surface cursor-pointer">
-                      Color
-                      <input
-                        type="color"
-                        defaultValue="#6BC6F5"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onChange={(e) => applyColor(e.target.value)}
-                        className="w-5 h-5 bg-transparent border-none p-0"
-                        aria-label="Text color"
-                      />
-                    </label>
-
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('insertUnorderedList')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">• List</button>
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('insertOrderedList')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">1. List</button>
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('createLink')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">Link</button>
-                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => applyEditorCommand('removeFormat')} className="px-2 py-1 border border-white/10 rounded text-xs text-gray-200 hover:bg-white/10">Clear</button>
-                  </div>
-
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={handleEditorInput}
-                    onPaste={handleEditorPaste}
-                    className="w-full min-h-64 max-h-96 overflow-y-auto p-3 text-white focus:outline-none focus:ring-0 text-sm leading-relaxed"
-                    style={{ whiteSpace: 'pre-wrap' }}
-                    role="textbox"
-                    aria-label="News content editor"
-                  />
+                  <EditorToolbar editor={editor} />
+                  <EditorContent editor={editor} />
                 </div>
-
-                <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. Content is stored as structured JSON.</p>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Use the toolbar to format content. Bold, italic, headings, lists, colors, and links are all supported.
+                </p>
               </div>
 
+              {/* Image */}
               <div>
                 <label className="block text-gray-400 text-xs mb-1 font-pixel">Image URL (Optional)</label>
                 <input
@@ -545,6 +436,7 @@ const AdminNews = () => {
                 />
               </div>
 
+              {/* Buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
@@ -558,7 +450,7 @@ const AdminNews = () => {
                   disabled={loading}
                   className="px-6 py-2 bg-sky-blue text-white rounded-lg hover:bg-light-blue transition-colors font-pixel text-xs shadow-lg disabled:opacity-50"
                 >
-                  {loading ? 'Saving...' : (selectedNews ? 'Update News' : 'Create News')}
+                  {loading ? 'Saving...' : selectedNews ? 'Update News' : 'Create News'}
                 </button>
               </div>
             </form>
@@ -578,24 +470,22 @@ const AdminNews = () => {
               key={item._id}
               className="bg-dark-surface border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center hover:border-white/10 transition-colors"
             >
-              {/* Image Thumbnail */}
-              <div className="w-full sm:w-24 h-24 sm:h-24 bg-dark-bg rounded-lg overflow-hidden shrink-0 border border-white/5">
+              {/* Thumbnail */}
+              <div className="w-full sm:w-24 h-24 bg-dark-bg rounded-lg overflow-hidden shrink-0 border border-white/5">
                 {item.image ? (
                   <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                    No Image
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">No Image</div>
                 )}
               </div>
 
-              {/* Content */}
+              {/* Info */}
               <div className="grow min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="font-bold text-white text-lg truncate mr-2">{item.title}</h3>
                   <span className={`px-2 py-0.5 text-[10px] rounded border ${
-                    item.isActive 
-                      ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                    item.isActive
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
                       : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                   }`}>
                     {item.isActive ? 'ACTIVE' : 'DRAFT'}
@@ -604,12 +494,12 @@ const AdminNews = () => {
                 <p className="text-gray-400 text-sm line-clamp-2 mb-2">{item.summary}</p>
                 <div className="flex items-center gap-4 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
-                    <img 
-                         src={`https://mc-heads.net/avatar/${item.author}`} 
-                         alt="" 
-                         className="w-4 h-4 rounded-sm"
-                         onError={(e) => { e.target.style.display = 'none' }}
-                     />
+                    <img
+                      src={`https://mc-heads.net/avatar/${item.author}`}
+                      alt=""
+                      className="w-4 h-4 rounded-sm"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
                     <span>{item.author}</span>
                   </div>
                   <span>•</span>

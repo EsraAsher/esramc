@@ -21,23 +21,19 @@ const generateSlug = (title) => {
 const sanitizeNewsContent = (rawContent) =>
   sanitizeHtml(rawContent || '', {
     allowedTags: [
-      'p', 'br',
       'h1', 'h2', 'h3',
-      'strong', 'b',
-      'em', 'i',
-      'del', 's', 'strike',
+      'p',
+      'strong',
+      'em',
+      'span',
       'ul', 'ol', 'li',
       'a',
-      'span',
+      'br',
+      'del',
     ],
     allowedAttributes: {
-      a: ['href', 'target', 'rel'],
-      span: ['style'],
-      h1: ['style'],
-      h2: ['style'],
-      h3: ['style'],
-      p: ['style'],
-      li: ['style'],
+      '*': ['style'],
+      a: ['href'],
     },
     allowedStyles: {
       '*': {
@@ -56,7 +52,10 @@ const sanitizeNewsContent = (rawContent) =>
           attribs: style ? { style } : {},
         };
       },
-      a: sanitizeHtml.simpleTransform('a', { target: '_blank', rel: 'noopener noreferrer' }),
+      b: 'strong',
+      i: 'em',
+      s: 'del',
+      strike: 'del',
     },
   });
 
