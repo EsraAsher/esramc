@@ -6,6 +6,7 @@ import NewsPost from '../components/NewsPost';
 const LandingPage = () => {
   const [copied, setCopied] = useState(false);
   const [latestNews, setLatestNews] = useState(null);
+  const [newsLoading, setNewsLoading] = useState(true);
 
   useEffect(() => {
     // Fetch latest active news
@@ -13,11 +14,16 @@ const LandingPage = () => {
       .then((newsData) => {
         if (newsData && newsData.length > 0) {
           setLatestNews(newsData[0]);
+        } else {
+          setLatestNews(null);
         }
       })
       .catch((err) => {
         console.error("Failed to fetch news:", err);
         setLatestNews(null);
+      })
+      .finally(() => {
+        setNewsLoading(false);
       });
   }, []);
 
@@ -129,7 +135,11 @@ const LandingPage = () => {
       {/* ═══════════════════ LATEST NEWS ═══════════════════ */}
       <section className="pt-6 md:pt-8 pb-16 px-4">
         <div className="max-w-6xl mx-auto">
-          {latestNews ? (
+          {newsLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="text-sky-blue font-pixel text-sm animate-pulse">Loading updates...</div>
+            </div>
+          ) : latestNews ? (
             <div className="flex justify-center">
               <NewsPost news={latestNews} />
             </div>

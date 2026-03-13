@@ -17,41 +17,45 @@ const generateSlug = (title) => {
     .replace(/^-+|-+$/g, '');
 };
 
+// ─── HTML Sanitizer ──────────────────────────────────────
 const sanitizeNewsContent = (rawContent) =>
   sanitizeHtml(rawContent || '', {
     allowedTags: [
-      'p',
-      'br',
-      'h1',
-      'h2',
-      'h3',
-      'strong',
-      'b',
-      'em',
-      'i',
-      's',
-      'strike',
-      'del',
-      'ul',
-      'ol',
-      'li',
+      'p', 'br',
+      'h1', 'h2', 'h3',
+      'strong', 'b',
+      'em', 'i',
+      'del', 's', 'strike',
+      'ul', 'ol', 'li',
       'a',
       'span',
-      'font',
-      'blockquote',
     ],
     allowedAttributes: {
       a: ['href', 'target', 'rel'],
       span: ['style'],
-      font: ['color'],
+      h1: ['style'],
+      h2: ['style'],
+      h3: ['style'],
+      p: ['style'],
+      li: ['style'],
     },
     allowedStyles: {
-      span: {
+      '*': {
         color: [/^#(?:[0-9a-fA-F]{3}){1,2}$/, /^rgb\((\s*\d+\s*,){2}\s*\d+\s*\)$/],
+        'font-weight': [/^(bold|normal|\d+)$/],
+        'font-style': [/^(italic|normal)$/],
       },
     },
     allowedSchemes: ['http', 'https', 'mailto'],
     transformTags: {
+      // Convert deprecated <font color="X"> → <span style="color:X">
+      font: (tagName, attribs) => {
+        const style = attribs.color ? `color:${attribs.color};` : '';
+        return {
+          tagName: 'span',
+          attribs: style ? { style } : {},
+        };
+      },
       a: sanitizeHtml.simpleTransform('a', { target: '_blank', rel: 'noopener noreferrer' }),
     },
   });
@@ -69,12 +73,83 @@ const deriveSummaryFromHtml = (html, maxLength = 300) => {
   return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
 };
 
+// ─── JSON Content Helpers ────────────────────────────────
+const ALLOWED_BLOCK_TYPES = new Set(['h1', 'h2', 'h3', 'p', 'ul', 'ol']);
+
+/**
+ * Validate structured JSON content blocks.
+ * Returns true if the structure is valid.
+ */
+const validateJsonContent = (blocks) => {
+  if (!Array.isArray(blocks)) return false;
+  if (blocks.length === 0) return false;
+
+  for (const block of blocks) {
+    if (!block || typeof block !== 'object') return false;
+    if (!block.type || !ALLOWED_BLOCK_TYPES.has(block.type)) return false;
+    if (!Array.isArray(block.children) || block.children.length === 0) return false;
+
+    // For list types, children are list items
+    if (block.type === 'ul' || block.type === 'ol') {
+      for (const li of block.children) {
+        if (!li || li.type !== 'li') return false;
+        if (!Array.isArray(li.children) || li.children.length === 0) return false;
+        for (const node of li.children) {
+          if (!node || typeof node.text !== 'string') return false;
+        }
+      }
+    } else {
+      for (const node of block.children) {
+        if (!node || typeof node.text !== 'string') return false;
+      }
+    }
+  }
+  return true;
+};
+
+/**
+ * Derive a plain-text summary from structured JSON content.
+ */
+const deriveSummaryFromJson = (blocks, maxLength = 300) => {
+  const parts = [];
+
+  const extractText = (children) => {
+    for (const node of children) {
+      if (typeof node.text === 'string') {
+        parts.push(node.text);
+      }
+      if (Array.isArray(node.children)) {
+        extractText(node.children);
+      }
+    }
+  };
+
+  for (const block of blocks) {
+    if (Array.isArray(block.children)) {
+      extractText(block.children);
+    }
+  }
+
+  const text = parts.join(' ').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
+};
+
+/**
+ * Check if JSON content has any meaningful text.
+ */
+const jsonHasMeaningfulContent = (blocks) => {
+  if (!Array.isArray(blocks)) return false;
+  return deriveSummaryFromJson(blocks, 10).length > 0;
+};
+
 // ─── Public: Get Active News (Latest) ─────────────────
 router.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 = all
     const query = News.find({ isActive: true })
-      .select('title slug summary content image author createdAt isActive') // Select fields
+      .select('title slug summary content contentType image author createdAt isActive')
       .sort({ createdAt: -1 });
 
     if (limit > 0) {
@@ -127,18 +202,38 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 
   try {
-    const { title, content, image, author, isActive } = req.body;
+    const { title, content, contentType, image, author, isActive } = req.body;
     
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
     }
 
-    const sanitizedContent = sanitizeNewsContent(content);
-    if (!hasMeaningfulContent(sanitizedContent)) {
-      return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
-    }
+    let finalContent;
+    let finalContentType;
+    let summary;
 
-    const summary = deriveSummaryFromHtml(sanitizedContent, 300);
+    if (contentType === 'json') {
+      // Structured JSON content
+      const blocks = typeof content === 'string' ? JSON.parse(content) : content;
+      if (!validateJsonContent(blocks)) {
+        return res.status(400).json({ message: 'Invalid content structure' });
+      }
+      if (!jsonHasMeaningfulContent(blocks)) {
+        return res.status(400).json({ message: 'Content cannot be empty' });
+      }
+      finalContent = blocks;
+      finalContentType = 'json';
+      summary = deriveSummaryFromJson(blocks, 300);
+    } else {
+      // Legacy HTML content
+      const sanitizedContent = sanitizeNewsContent(content);
+      if (!hasMeaningfulContent(sanitizedContent)) {
+        return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
+      }
+      finalContent = sanitizedContent;
+      finalContentType = 'html';
+      summary = deriveSummaryFromHtml(sanitizedContent, 300);
+    }
 
     let slug = generateSlug(title);
     
@@ -152,7 +247,8 @@ router.post('/', authMiddleware, async (req, res) => {
       title: title.trim(),
       slug,
       summary,
-      content: sanitizedContent,
+      content: finalContent,
+      contentType: finalContentType,
       image: image ? image.trim() : '',
       author: author.trim(),
       isActive: Boolean(isActive),
@@ -177,18 +273,36 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { title, content, image, author, isActive } = req.body;
+    const { title, content, contentType, image, author, isActive } = req.body;
 
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
     }
 
-    const sanitizedContent = sanitizeNewsContent(content);
-    if (!hasMeaningfulContent(sanitizedContent)) {
-      return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
-    }
+    let finalContent;
+    let finalContentType;
+    let summary;
 
-    const summary = deriveSummaryFromHtml(sanitizedContent, 300);
+    if (contentType === 'json') {
+      const blocks = typeof content === 'string' ? JSON.parse(content) : content;
+      if (!validateJsonContent(blocks)) {
+        return res.status(400).json({ message: 'Invalid content structure' });
+      }
+      if (!jsonHasMeaningfulContent(blocks)) {
+        return res.status(400).json({ message: 'Content cannot be empty' });
+      }
+      finalContent = blocks;
+      finalContentType = 'json';
+      summary = deriveSummaryFromJson(blocks, 300);
+    } else {
+      const sanitizedContent = sanitizeNewsContent(content);
+      if (!hasMeaningfulContent(sanitizedContent)) {
+        return res.status(400).json({ message: 'Content cannot be empty after sanitization' });
+      }
+      finalContent = sanitizedContent;
+      finalContentType = 'html';
+      summary = deriveSummaryFromHtml(sanitizedContent, 300);
+    }
 
     const news = await News.findById(id);
     if (!news) {
@@ -200,7 +314,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (!news.slug) news.slug = generateSlug(title.trim());
     
     news.summary = summary;
-    news.content = sanitizedContent;
+    news.content = finalContent;
+    news.contentType = finalContentType;
     news.image = image ? image.trim() : '';
     news.author = author.trim();
     news.isActive = Boolean(isActive);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchAllNews, createNews, updateNews, deleteNews } from '../../api';
+import { jsonToHtml } from '../../utils/newsUtils';
 
 const AdminNews = () => {
   const [news, setNews] = useState([]);
@@ -33,23 +34,284 @@ const AdminNews = () => {
     }
   };
 
+  // ─── DOM → Structured JSON Serializer ──────────────────
+  const serializeEditor = () => {
+    const editor = editorRef.current;
+    if (!editor) return [];
+
+    const blocks = [];
+    const children = editor.childNodes;
+
+    // Helper: serialize inline content of a node to text-node array
+    const serializeInline = (node) => {
+      const result = [];
+
+      const walk = (el, inherited) => {
+        if (el.nodeType === Node.TEXT_NODE) {
+          const text = el.textContent;
+          if (text) {
+            result.push({ text, ...inherited });
+          }
+          return;
+        }
+
+        if (el.nodeType !== Node.ELEMENT_NODE) return;
+
+        const tag = el.tagName?.toLowerCase();
+        const props = { ...inherited };
+
+        if (tag === 'strong' || tag === 'b') props.bold = true;
+        if (tag === 'em' || tag === 'i') props.italic = true;
+        if (tag === 'del' || tag === 's' || tag === 'strike') props.strike = true;
+        if (tag === 'a' && el.href) props.link = el.href;
+
+        // Color from <span style> or <font color>
+        if (tag === 'span' && el.style?.color) {
+          props.color = el.style.color;
+        }
+        if (tag === 'font' && el.getAttribute('color')) {
+          props.color = el.getAttribute('color');
+        }
+
+        for (const child of el.childNodes) {
+          walk(child, props);
+        }
+      };
+
+      walk(node, {});
+      return result.length > 0 ? result : [{ text: '' }];
+    };
+
+    // Normalize: if the editor has no block-level elements, wrap everything in <p>
+    const isBlockTag = (tag) => ['P', 'H1', 'H2', 'H3', 'UL', 'OL', 'DIV', 'BLOCKQUOTE'].includes(tag);
+
+    for (const child of children) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const text = child.textContent.trim();
+        if (text) {
+          blocks.push({ type: 'p', children: [{ text }] });
+        }
+        continue;
+      }
+
+      if (child.nodeType !== Node.ELEMENT_NODE) continue;
+
+      const tag = child.tagName;
+
+      if (tag === 'UL' || tag === 'OL') {
+        const items = [];
+        for (const li of child.querySelectorAll('li')) {
+          items.push({ type: 'li', children: serializeInline(li) });
+        }
+        if (items.length > 0) {
+          blocks.push({ type: tag.toLowerCase(), children: items });
+        }
+        continue;
+      }
+
+      if (tag === 'BR') {
+        // Skip standalone <br> or add empty paragraph
+        continue;
+      }
+
+      // Map to allowed block types
+      let blockType = 'p';
+      if (tag === 'H1') blockType = 'h1';
+      else if (tag === 'H2') blockType = 'h2';
+      else if (tag === 'H3') blockType = 'h3';
+      else if (!isBlockTag(tag)) {
+        // Inline element at top level — wrap in p
+        blockType = 'p';
+      }
+
+      const inlineChildren = serializeInline(child);
+      // Clean up: remove empty trailing text nodes
+      const cleanChildren = inlineChildren.filter((n, i) =>
+        n.text !== '' || i < inlineChildren.length - 1
+      );
+
+      if (cleanChildren.length > 0) {
+        blocks.push({ type: blockType, children: cleanChildren });
+      }
+    }
+
+    return blocks;
+  };
+
+  // ─── JSON → Editor HTML (for editing existing posts) ───
+  const contentToEditorHtml = (newsItem) => {
+    if (!newsItem) return '';
+    if (newsItem.contentType === 'json' && Array.isArray(newsItem.content)) {
+      return jsonToHtml(newsItem.content);
+    }
+    // Legacy HTML
+    return typeof newsItem.content === 'string' ? newsItem.content : '';
+  };
+
+  // ─── Custom Color Command ────────────────────────────
+  const applyColor = (color) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.commonAncestorContainer)) return;
+
+    if (range.collapsed) return; // no text selected
+
+    // Wrap selection in a span with color style
+    const span = document.createElement('span');
+    span.style.color = color;
+
+    try {
+      range.surroundContents(span);
+    } catch {
+      // If selection crosses element boundaries, use execCommand as fallback
+      // then fix the output
+      document.execCommand('foreColor', false, color);
+      // Convert any <font> tags the browser may have created
+      const fonts = editor.querySelectorAll('font[color]');
+      fonts.forEach((font) => {
+        const replacement = document.createElement('span');
+        replacement.style.color = font.getAttribute('color');
+        replacement.innerHTML = font.innerHTML;
+        font.replaceWith(replacement);
+      });
+    }
+
+    selection.removeAllRanges();
+  };
+
+  // ─── Editor Commands ──────────────────────────────────
+  const applyEditorCommand = (command, value = null) => {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+    if (command === 'createLink') {
+      const link = window.prompt('Enter URL (https://...)');
+      if (!link) return;
+      document.execCommand('createLink', false, link);
+      return;
+    }
+    if (command === 'removeFormat') {
+      document.execCommand('removeFormat', false, null);
+      return;
+    }
+    document.execCommand(command, false, value);
+  };
+
+  const handleHeadingChange = (e) => {
+    const value = e.target.value;
+    if (!value) return;
+    editorRef.current?.focus();
+    document.execCommand('formatBlock', false, `<${value}>`);
+    e.target.value = '';
+  };
+
+  const handleEditorInput = () => {
+    if (error) setError('');
+  };
+
+  // ─── Paste Sanitization ───────────────────────────────
+  const handleEditorPaste = (e) => {
+    e.preventDefault();
+    const clipboardData = e.clipboardData;
+
+    // Try to get HTML first, then sanitize it
+    let html = clipboardData.getData('text/html');
+
+    if (html) {
+      // Strip external styles, class attributes, data attributes, scripts
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+
+      // Remove all style tags, script tags, meta tags
+      temp.querySelectorAll('style, script, meta, link').forEach((el) => el.remove());
+
+      // Walk all elements and clean attributes
+      temp.querySelectorAll('*').forEach((el) => {
+        // Remove class, id, data-* attributes
+        const attrs = [...el.attributes];
+        for (const attr of attrs) {
+          const name = attr.name.toLowerCase();
+          if (name === 'class' || name === 'id' || name.startsWith('data-')) {
+            el.removeAttribute(attr.name);
+          }
+          // Remove style except color
+          if (name === 'style') {
+            const color = el.style.color;
+            const fontWeight = el.style.fontWeight;
+            const fontStyle = el.style.fontStyle;
+            el.removeAttribute('style');
+            if (color) el.style.color = color;
+            if (fontWeight === 'bold' || parseInt(fontWeight) >= 700) el.style.fontWeight = 'bold';
+            if (fontStyle === 'italic') el.style.fontStyle = 'italic';
+          }
+        }
+
+        // Convert unsupported tags to spans or remove them
+        const tag = el.tagName.toLowerCase();
+        const allowed = ['p', 'br', 'h1', 'h2', 'h3', 'strong', 'b', 'em', 'i', 'del', 's',
+          'ul', 'ol', 'li', 'a', 'span', 'div'];
+        if (!allowed.includes(tag)) {
+          // Replace with its inner content
+          const fragment = document.createDocumentFragment();
+          while (el.firstChild) fragment.appendChild(el.firstChild);
+          el.replaceWith(fragment);
+        }
+      });
+
+      // Convert <font> to <span>
+      temp.querySelectorAll('font').forEach((font) => {
+        const span = document.createElement('span');
+        if (font.getAttribute('color')) {
+          span.style.color = font.getAttribute('color');
+        }
+        span.innerHTML = font.innerHTML;
+        font.replaceWith(span);
+      });
+
+      // Insert the cleaned HTML
+      const cleaned = temp.innerHTML;
+      document.execCommand('insertHTML', false, cleaned);
+    } else {
+      // Plain text fallback
+      const text = clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+    }
+  };
+
+  // ─── Form Handling ────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
 
-    const editorHtml = editorRef.current?.innerHTML || formData.content || '';
-    const plainEditorText = String(editorHtml).replace(/<[^>]*>/g, '').trim();
-    if (!plainEditorText) {
+    // Serialize editor DOM to structured JSON
+    const blocks = serializeEditor();
+
+    // Check for meaningful content
+    const hasText = blocks.some((block) => {
+      const checkChildren = (children) =>
+        children?.some((c) => (c.text && c.text.trim()) || checkChildren(c.children));
+      return checkChildren(block.children);
+    });
+
+    if (!hasText) {
       setError('Content is required');
       setLoading(false);
       return;
     }
 
     const payload = {
-      ...formData,
-      content: editorHtml,
+      title: formData.title,
+      content: blocks,
+      contentType: 'json',
+      image: formData.image,
+      author: formData.author,
+      isActive: formData.isActive,
     };
 
     try {
@@ -97,39 +359,6 @@ const AdminNews = () => {
     }
   };
 
-  const applyEditorCommand = (command, value = null) => {
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-    if (command === 'createLink') {
-      const link = window.prompt('Enter URL (https://...)');
-      if (!link) return;
-      document.execCommand('createLink', false, link);
-      return;
-    }
-    if (command === 'removeFormat') {
-      document.execCommand('removeFormat', false, null);
-      return;
-    }
-    document.execCommand(command, false, value);
-  };
-
-  const handleHeadingChange = (e) => {
-    const value = e.target.value;
-    if (!value) return;
-    applyEditorCommand('formatBlock', `<${value}>`);
-    e.target.value = '';
-  };
-
-  const handleEditorInput = () => {
-    if (error) setError('');
-  };
-
-  const handleEditorPaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
-
   const resetForm = () => {
     setFormData({
       title: '',
@@ -149,7 +378,7 @@ const AdminNews = () => {
 
   useEffect(() => {
     if (!showForm || !editorRef.current) return;
-    editorRef.current.innerHTML = selectedNews?.content || '';
+    editorRef.current.innerHTML = contentToEditorHtml(selectedNews);
   }, [showForm, selectedNews]);
 
   return (
@@ -259,7 +488,6 @@ const AdminNews = () => {
                       className="bg-dark-surface border border-white/10 rounded px-2 py-1 text-xs text-gray-200"
                       defaultValue=""
                       onChange={handleHeadingChange}
-                      onMouseDown={(e) => e.preventDefault()}
                     >
                       <option value="">Headings</option>
                       <option value="h1">Large (H1)</option>
@@ -277,7 +505,8 @@ const AdminNews = () => {
                       <input
                         type="color"
                         defaultValue="#6BC6F5"
-                        onChange={(e) => applyEditorCommand('foreColor', e.target.value)}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onChange={(e) => applyColor(e.target.value)}
                         className="w-5 h-5 bg-transparent border-none p-0"
                         aria-label="Text color"
                       />
@@ -302,7 +531,7 @@ const AdminNews = () => {
                   />
                 </div>
 
-                <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. This will be stored as safe HTML.</p>
+                <p className="text-[11px] text-gray-500 mt-1">Use the toolbar to format content. Content is stored as structured JSON.</p>
               </div>
 
               <div>

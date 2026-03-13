@@ -21,9 +21,13 @@ const newsSchema = new mongoose.Schema({
     maxlength: 300,
   },
   content: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed,
     required: true,
-    trim: true,
+  },
+  contentType: {
+    type: String,
+    enum: ['html', 'json'],
+    default: 'html',
   },
   author: {
     type: String,

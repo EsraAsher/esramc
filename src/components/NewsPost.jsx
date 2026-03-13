@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Eye, MessageSquare } from 'lucide-react';
+import { getRenderedContent } from '../utils/newsUtils';
 
 const NewsPost = ({ news, isPreview = true }) => {
-  const { title, content, summary, author, createdAt, slug, views, commentsCount } = news;
+  const { title, author, createdAt, slug, views, commentsCount } = news;
 
   const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -10,13 +11,8 @@ const NewsPost = ({ news, isPreview = true }) => {
     day: 'numeric',
   });
 
-  const contentToShow = content || summary || '';
-  const plainContent = String(contentToShow || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  const previewLimit = 220;
-  const previewText =
-    plainContent.length > previewLimit
-      ? `${plainContent.slice(0, previewLimit).trim()}...`
-      : plainContent;
+  // Get rendered HTML from JSON or legacy HTML
+  const renderedHtml = getRenderedContent(news);
 
   return (
     <div
@@ -46,13 +42,19 @@ const NewsPost = ({ news, isPreview = true }) => {
         <hr className="border-white/10 my-3" />
 
         {isPreview ? (
-          <p className="text-gray-300 text-sm md:text-base leading-relaxed line-clamp-2">
-            {previewText}
-          </p>
+          <div
+            className="news-preview-content text-gray-300 text-sm md:text-base leading-relaxed overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+          />
         ) : (
           <div
             className="prose prose-invert prose-sm md:prose-base max-w-none text-gray-300 leading-relaxed prose-headings:text-white prose-headings:font-pixel prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-200 prose-a:text-sky-blue hover:prose-a:text-light-blue prose-ul:my-3 prose-ol:my-3 prose-li:my-1"
-            dangerouslySetInnerHTML={{ __html: contentToShow }}
+            dangerouslySetInnerHTML={{ __html: renderedHtml }}
           />
         )}
 

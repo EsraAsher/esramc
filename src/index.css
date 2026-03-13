@@ -170,6 +170,58 @@ body::after {
   animation: marquee 20s linear infinite;
 }
 
+/* News Preview Content — styled HTML inside card preview */
+.news-preview-content h1,
+.news-preview-content h2,
+.news-preview-content h3 {
+  display: inline;
+  font-size: inherit;
+  font-weight: 800;
+  color: #fff;
+}
+
+.news-preview-content strong,
+.news-preview-content b {
+  color: #fff;
+  font-weight: 700;
+}
+
+.news-preview-content em,
+.news-preview-content i {
+  font-style: italic;
+}
+
+.news-preview-content del,
+.news-preview-content s {
+  text-decoration: line-through;
+}
+
+.news-preview-content ul,
+.news-preview-content ol {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.news-preview-content li {
+  display: inline;
+}
+
+.news-preview-content li::after {
+  content: ' ';
+}
+
+.news-preview-content p {
+  display: inline;
+  margin: 0;
+}
+
+.news-preview-content a {
+  color: #3AA7E3;
+  text-decoration: underline;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
