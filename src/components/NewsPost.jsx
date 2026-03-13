@@ -41,12 +41,12 @@ const NewsPost = ({ news, isPreview = true }) => {
 
         {isPreview ? (
           <div
-            className="news-preview-content text-gray-300 text-sm md:text-base leading-relaxed"
+            className="news-content news-preview text-gray-300 text-sm md:text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: renderedHtml }}
           />
         ) : (
           <div
-            className="news-render-content max-w-none text-sm md:text-base leading-relaxed"
+            className="news-content news-render-content max-w-none text-sm md:text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: renderedHtml }}
           />
         )}

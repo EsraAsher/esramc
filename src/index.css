@@ -191,110 +191,82 @@ body::after {
 
 /* Colors via TextStyle/Color extension render via inline style — no override needed */
 
-/* ─── News Full-View Render Styles ─────────────────── */
-.news-render-content h1 { font-size: 1.75rem; font-weight: 800; color: #fff; margin: 0.75em 0 0.4em; line-height: 1.25; }
-.news-render-content h2 { font-size: 1.4rem;  font-weight: 700; color: #fff; margin: 0.6em 0 0.35em; line-height: 1.3; }
-.news-render-content h3 { font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0.5em 0 0.3em;  line-height: 1.3; }
-.news-render-content p  { color: #d1d5db; margin: 0.4em 0; line-height: 1.7; }
+/* ─── News Content (shared full + preview) ─────────────────── */
+.news-content {
+  white-space: pre-line;
+}
 
-.news-render-content ul { list-style: disc;    padding-left: 1.6em; margin: 0.5em 0; }
-.news-render-content ol { list-style: decimal; padding-left: 1.6em; margin: 0.5em 0; }
-.news-render-content li { color: #d1d5db; margin: 0.25em 0; line-height: 1.6; }
+.news-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #d1d5db;
+}
 
-.news-render-content strong { font-weight: 700; color: #fff; }
-.news-render-content em     { font-style: italic; color: #e5e7eb; }
-.news-render-content del    { text-decoration: line-through; color: #9ca3af; }
-.news-render-content a      { color: #3AA7E3; text-decoration: underline; }
-.news-render-content a:hover { color: #6BC6F5; }
-.news-render-content br     { display: block; margin: 0.2em 0; content: ''; }
+.news-content ul {
+  padding-left: 1.5rem;
+  list-style: disc;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.news-content ol {
+  padding-left: 1.5rem;
+  list-style: decimal;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+.news-content li {
+  margin-bottom: 0.4rem;
+}
+
+.news-content h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 1.2rem;
+  margin-bottom: 0.6rem;
+  color: #fff;
+}
+
+.news-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.news-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+  color: #fff;
+}
+
+.news-content strong { font-weight: 700; color: #fff; }
+.news-content em     { font-style: italic; color: #e5e7eb; }
+.news-content del    { text-decoration: line-through; color: #9ca3af; }
+.news-content a      { color: #3AA7E3; text-decoration: underline; }
+.news-content a:hover { color: #6BC6F5; }
+.news-content br     { display: block; margin: 0.2em 0; content: ''; }
 
 /* Inline color spans — must not be overridden */
-.news-render-content span[style*="color"],
-.news-render-content h1[style*="color"],
-.news-render-content h2[style*="color"],
-.news-render-content h3[style*="color"],
-.news-render-content p[style*="color"] {
-  color: inherit; /* let the inline style win */
-}
-
-/* ─── News Preview Content (70% cutoff with gradient fade) */
-.news-preview-content {
-  max-height: 320px;
-  overflow: hidden;
-  color: #d1d5db;
-  line-height: 1.6;
-  position: relative;
-}
-
-/* Gradient fade at bottom when content is cut off */
-.news-preview-content::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(to bottom, transparent 0%, #0F1C2E 100%);
-  pointer-events: none;
-}
-
-/* Preserve formatting in preview while keeping inline flow */
-.news-preview-content h1,
-.news-preview-content h2,
-.news-preview-content h3 {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0.25em 0 0;
-  display: inline;
-}
-.news-preview-content strong, .news-preview-content b { 
-  font-weight: 700; 
-  color: #fff; 
-}
-.news-preview-content em, .news-preview-content i { 
-  font-style: italic; 
-  color: #e5e7eb;
-}
-.news-preview-content del, .news-preview-content s { 
-  text-decoration: line-through; 
-  color: #9ca3af;
-}
-.news-preview-content ul, .news-preview-content ol { 
-  display: inline; 
-  list-style: none; 
-  padding: 0; 
-  margin: 0; 
-}
-.news-preview-content li { 
-  display: inline; 
-  color: #d1d5db;
-}
-.news-preview-content li::after { 
-  content: ' · '; 
-  color: #6b7280; 
-  margin: 0 0.25em;
-}
-.news-preview-content li:last-child::after { 
-  content: ''; 
-}
-.news-preview-content p { 
-  display: inline; 
-  margin: 0 0.25em 0 0; 
-  color: #d1d5db;
-}
-.news-preview-content a { 
-  color: #3AA7E3; 
-  text-decoration: underline;
-}
-
-/* Preserve inline color styles in preview */
-.news-preview-content span[style*="color"],
-.news-preview-content h1[style*="color"],
-.news-preview-content h2[style*="color"],
-.news-preview-content h3[style*="color"],
-.news-preview-content p[style*="color"] {
+.news-content span[style*="color"],
+.news-content h1[style*="color"],
+.news-content h2[style*="color"],
+.news-content h3[style*="color"],
+.news-content p[style*="color"] {
   color: inherit;
+}
+
+/* ─── Homepage Preview Clamp (keep height consistent) */
+.news-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 
