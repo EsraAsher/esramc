@@ -6,6 +6,7 @@ import { fetchCollections } from '../api';
 const Navbar = ({ username }) => {
   const [moreOpen, setMoreOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [serverModalOpen, setServerModalOpen] = useState(false);
   const [collections, setCollections] = useState([]);
   const [scrolled, setScrolled] = useState(false);
   const mobileDropdownRef = useRef(null);
@@ -54,6 +55,21 @@ const Navbar = ({ username }) => {
     }
     return () => { document.body.style.overflow = ''; };
   }, [drawerOpen]);
+
+  const handleServerCopy = async () => {
+    const serverIp = 'play.esramc.com';
+    try {
+      await navigator.clipboard.writeText(serverIp);
+    } catch {
+      const tempInput = document.createElement('input');
+      tempInput.value = serverIp;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+    }
+    setServerModalOpen(true);
+  };
 
   /* ═══════════════════ STORE NAVBAR ═══════════════════ */
   if (isStorePage) {
@@ -213,14 +229,43 @@ const Navbar = ({ username }) => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Mobile MENU button */}
+          {/* Mobile quick access: Menu + Server + Discord */}
           <div className="relative md:hidden" ref={mobileDropdownRef}>
-            <button
-              onClick={() => setMoreOpen(!moreOpen)}
-              className="font-pixel text-sm text-gray-300 hover:text-sky-blue transition-colors"
-            >
-              <span>MENU</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 active:bg-white/20 transition-colors flex items-center justify-center text-gray-200"
+                aria-label="Open menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              <button
+                onClick={handleServerCopy}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 active:bg-white/20 transition-colors flex items-center justify-center text-gray-200"
+                aria-label="Copy server IP"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 20h6a5 5 0 0 0 5-5v-1a3 3 0 0 0-3-3h-1a3 3 0 0 0-3 3v1H9a5 5 0 0 1-5-5V9a5 5 0 0 1 5-5h2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 10h.01M13 8h.01M16 10h.01" />
+                </svg>
+              </button>
+
+              <a
+                href="https://discord.gg/esramc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 active:bg-white/20 transition-colors flex items-center justify-center text-gray-200"
+                aria-label="Open Discord"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
+                </svg>
+              </a>
+            </div>
+
             {moreOpen && (
               <div className="absolute top-full right-0 mt-3 w-52 bg-dark-surface border border-sky-blue/30 rounded-lg shadow-[0_0_20px_rgba(58,167,227,0.15)] overflow-hidden">
                 <Link to="/store" className="block px-6 py-3.5 text-gray-300 hover:text-white hover:bg-sky-blue/10 transition-all font-pixel text-sm border-b border-white/5" onClick={() => setMoreOpen(false)}>
@@ -237,6 +282,22 @@ const Navbar = ({ username }) => {
           </div>
         </div>
       </div>
+
+      {serverModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 md:hidden">
+          <div className="w-full max-w-sm bg-dark-surface border border-white/10 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.45)] p-5 text-center">
+            <h3 className="font-pixel text-base text-white mb-2">Server IP copied!</h3>
+            <p className="text-gray-300 text-sm mb-1">Server IP: play.esramc.com</p>
+            <p className="text-gray-300 text-sm mb-4">Bedrock Port: 7777</p>
+            <button
+              onClick={() => setServerModalOpen(false)}
+              className="px-5 py-2 bg-sky-blue/10 border border-sky-blue/30 text-sky-blue font-pixel text-xs rounded hover:bg-sky-blue/20 hover:border-sky-blue/60 transition-all duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
