@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
@@ -189,7 +188,9 @@ const AdminNews = () => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false,
+        heading: {
+          levels: [1, 2, 3],
+        },
         bold: {},
         italic: {},
         strike: {},
@@ -201,7 +202,6 @@ const AdminNews = () => {
         blockquote: false,
         horizontalRule: false,
       }),
-      Heading.configure({ levels: [1, 2, 3] }),
       TextStyle,
       Color,
       Link.configure({

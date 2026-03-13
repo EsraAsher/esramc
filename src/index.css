@@ -263,10 +263,11 @@ body::after {
 /* ─── Homepage Preview Clamp (keep height consistent) */
 .news-preview {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  -webkit-line-clamp: 6;
+  min-height: 80px;
+  max-height: 150px;
 }
 
 
