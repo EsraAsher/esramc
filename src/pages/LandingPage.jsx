@@ -153,8 +153,8 @@ const LandingPage = () => {
       {/* ═══════════════════ STORE PREVIEW ═══════════════════ */}
       <section className="py-16 px-4 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-pixel text-xl sm:text-2xl text-sky-blue mb-4">Support the Server</h2>
-          <p className="text-gray-300 text-base mb-8 max-w-2xl mx-auto">
+          <h2 className="font-pixel text-xl sm:text-2xl text-sky-blue mb-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Support the Server</h2>
+          <p className="text-gray-300 text-base mb-8 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             Visit our store to unlock special ranks and perks to enhance your gameplay experience.
           </p>
 
@@ -176,7 +176,7 @@ const LandingPage = () => {
               <img
                 src="https://i.postimg.cc/kGFcyCTX/esramc-footerlogo.png"
                 alt="EsraMC"
-                className="h-8 w-auto"
+                className="h-16 w-auto"
               />
             </div>
 
