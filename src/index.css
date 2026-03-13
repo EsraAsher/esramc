@@ -116,20 +116,28 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
-  background-image:
-    linear-gradient(
-      to bottom,
-      rgba(15, 28, 46, 0.55) 0%,
-      rgba(58, 167, 227, 0.06) 45%,
-      rgba(15, 28, 46, 0.85) 100%
-    ),
-    url('/src/assets/bg.png');
+  background-image: url('/src/assets/bg.png');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  filter: saturate(1.02) contrast(0.95);
+  filter: blur(5px) saturate(1.02) contrast(0.95);
+  transform: scale(1.03);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 10, 0.18) 0%,
+    rgba(10, 10, 10, 0.38) 55%,
+    rgba(10, 10, 10, 0.76) 100%
+  );
 }
 
 /* Animations */
