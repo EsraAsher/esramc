@@ -251,14 +251,7 @@ body::after {
 .news-content a:hover { color: #6BC6F5; }
 .news-content br     { display: block; margin: 0.2em 0; content: ''; }
 
-/* Inline color spans — must not be overridden */
-.news-content span[style*="color"],
-.news-content h1[style*="color"],
-.news-content h2[style*="color"],
-.news-content h3[style*="color"],
-.news-content p[style*="color"] {
-  color: inherit;
-}
+/* Inline colors from editor content are preserved via element style attributes */
 
 /* ─── Homepage Preview Clamp (keep height consistent) */
 .news-preview {

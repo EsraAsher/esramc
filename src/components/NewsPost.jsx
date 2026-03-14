@@ -3,7 +3,7 @@ import { Eye, MessageSquare } from 'lucide-react';
 import { getRenderedContent } from '../utils/newsUtils';
 
 const NewsPost = ({ news, isPreview = true }) => {
-  const { title, author, createdAt, slug, views, commentsCount } = news;
+  const { title, titleColor, author, createdAt, slug, views, commentsCount } = news;
 
   const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -20,7 +20,10 @@ const NewsPost = ({ news, isPreview = true }) => {
     >
       <div className={`p-4 md:p-5 ${isPreview ? 'h-full flex flex-col' : ''}`}>
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-2 md:gap-4 mb-3">
-          <h2 className={`font-pixel text-white mb-0 ${isPreview ? 'text-lg md:text-xl' : 'text-2xl md:text-3xl'}`}>
+          <h2
+            className={`font-pixel text-white mb-0 ${isPreview ? 'text-lg md:text-xl' : 'text-2xl md:text-3xl'}`}
+            style={titleColor ? { color: titleColor } : undefined}
+          >
             {title}
           </h2>
           <div className="flex items-center gap-3 mt-2 md:mt-0 shrink-0">
@@ -41,7 +44,7 @@ const NewsPost = ({ news, isPreview = true }) => {
 
         {isPreview ? (
           <div
-            className="news-content news-preview text-gray-300 text-sm md:text-base leading-relaxed"
+            className="news-content news-preview text-sm md:text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: renderedHtml }}
           />
         ) : (

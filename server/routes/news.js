@@ -72,6 +72,14 @@ const deriveSummaryFromHtml = (html, maxLength = 300) => {
   return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
 };
 
+const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+
+const normalizeTitleColor = (value) => {
+  if (typeof value !== 'string') return '#ffffff';
+  const normalized = value.trim();
+  return HEX_COLOR_REGEX.test(normalized) ? normalized.toLowerCase() : '#ffffff';
+};
+
 // ─── JSON Content Helpers ────────────────────────────────
 const ALLOWED_BLOCK_TYPES = new Set(['h1', 'h2', 'h3', 'p', 'ul', 'ol']);
 
@@ -148,7 +156,7 @@ router.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 = all
     const query = News.find({ isActive: true })
-      .select('title slug summary content contentType image author createdAt isActive')
+      .select('title titleColor slug summary content contentType image author createdAt isActive')
       .sort({ createdAt: -1 });
 
     if (limit > 0) {
@@ -201,7 +209,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 
   try {
-    const { title, content, contentType, image, author, isActive } = req.body;
+    const { title, titleColor, content, contentType, image, author, isActive } = req.body;
     
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
@@ -244,6 +252,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const news = new News({
       title: title.trim(),
+      titleColor: normalizeTitleColor(titleColor),
       slug,
       summary,
       content: finalContent,
@@ -272,7 +281,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { title, content, contentType, image, author, isActive } = req.body;
+    const { title, titleColor, content, contentType, image, author, isActive } = req.body;
 
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
@@ -309,6 +318,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     news.title = title.trim();
+    news.titleColor = normalizeTitleColor(titleColor);
     // Only update slug if not set, otherwise keep it
     if (!news.slug) news.slug = generateSlug(title.trim());
     

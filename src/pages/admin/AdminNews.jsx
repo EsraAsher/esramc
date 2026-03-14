@@ -177,6 +177,7 @@ const AdminNews = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
+    titleColor: '#ffffff',
     image: '',
     author: '',
     isActive: true,
@@ -275,6 +276,7 @@ const AdminNews = () => {
 
     const payload = {
       title: formData.title,
+      titleColor: formData.titleColor,
       content: htmlContent,
       contentType: 'html',
       image: formData.image,
@@ -303,6 +305,7 @@ const AdminNews = () => {
     setSelectedNews(newsItem);
     setFormData({
       title: newsItem.title,
+      titleColor: newsItem.titleColor || '#ffffff',
       image: newsItem.image || '',
       author: newsItem.author || '',
       isActive: newsItem.isActive,
@@ -325,7 +328,7 @@ const AdminNews = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', image: '', author: '', isActive: true });
+    setFormData({ title: '', titleColor: '#ffffff', image: '', author: '', isActive: true });
     setSelectedNews(null);
     setShowForm(false);
     editor?.commands.setContent('', false);
@@ -388,6 +391,28 @@ const AdminNews = () => {
                   placeholder="e.g. Season 1 Launch"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">Title Color</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={formData.titleColor}
+                    onChange={(e) => setFormData({ ...formData, titleColor: e.target.value })}
+                    className="h-11 w-14 bg-dark-bg border border-white/10 rounded-lg p-1 cursor-pointer"
+                    aria-label="Title color"
+                  />
+                  <input
+                    type="text"
+                    value={formData.titleColor}
+                    onChange={(e) => setFormData({ ...formData, titleColor: e.target.value })}
+                    className="w-full bg-dark-bg border border-white/10 rounded-lg p-3 text-white focus:border-sky-blue outline-none transition-colors"
+                    placeholder="#ffffff"
+                    pattern="^#(?:[0-9a-fA-F]{3}){1,2}$"
+                    title="Hex color format, e.g. #ffffff"
+                  />
+                </div>
               </div>
 
               {/* Author + Status */}
@@ -503,7 +528,12 @@ const AdminNews = () => {
               {/* Info */}
               <div className="grow min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 className="font-bold text-white text-lg truncate mr-2">{item.title}</h3>
+                  <h3
+                    className="font-bold text-white text-lg truncate mr-2"
+                    style={item.titleColor ? { color: item.titleColor } : undefined}
+                  >
+                    {item.title}
+                  </h3>
                   <span className={`px-2 py-0.5 text-[10px] rounded border ${
                     item.isActive
                       ? 'bg-green-500/10 text-green-400 border-green-500/20'

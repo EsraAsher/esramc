@@ -9,22 +9,44 @@ const LandingPage = () => {
   const [newsLoading, setNewsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch latest active news
+    let cancelled = false;
+
+    const applyNews = (newsData) => {
+      if (cancelled) return;
+      if (newsData && newsData.length > 0) {
+        setLatestNews(newsData[0]);
+      } else {
+        setLatestNews(null);
+      }
+    };
+
+    // 1) Serve cached/fast response first
     fetchActiveNews(1)
       .then((newsData) => {
-        if (newsData && newsData.length > 0) {
-          setLatestNews(newsData[0]);
-        } else {
+        applyNews(newsData);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('Failed to fetch news:', err);
           setLatestNews(null);
         }
       })
-      .catch((err) => {
-        console.error("Failed to fetch news:", err);
-        setLatestNews(null);
-      })
       .finally(() => {
-        setNewsLoading(false);
+        if (!cancelled) {
+          setNewsLoading(false);
+        }
       });
+
+    // 2) Revalidate in background and refresh UI if newer data exists
+    fetchActiveNews(1, { force: true })
+      .then((freshNewsData) => {
+        applyNews(freshNewsData);
+      })
+      .catch(() => null);
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleCopy = () => {

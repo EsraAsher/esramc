@@ -7,6 +7,12 @@ const newsSchema = new mongoose.Schema({
     trim: true,
     maxlength: 200,
   },
+  titleColor: {
+    type: String,
+    trim: true,
+    default: '#ffffff',
+    match: /^#(?:[0-9a-fA-F]{3}){1,2}$/,
+  },
   slug: {
     type: String,
     required: true,

@@ -3,6 +3,10 @@ const API_BASE = import.meta.env.VITE_API_URL
     ? '/api'
     : 'https://esramc-api.onrender.com/api');
 
+const ACTIVE_NEWS_CACHE_TTL_MS = 60 * 1000;
+const activeNewsCache = new Map();
+const activeNewsInFlight = new Map();
+
 // ─── Helper ───────────────────────────────────────────────
 async function request(url, options = {}) {
   const token = localStorage.getItem('admin_token');
@@ -257,7 +261,40 @@ export const resetMOTDStock = () =>
   request('/motd/admin/reset-stock', { method: 'POST' });
 
 // ─── News ─────────────────────────────────────────────────
-export const fetchActiveNews = (limit = 0) => request(`/news?limit=${limit}`);
+export const fetchActiveNews = (limit = 0, options = {}) => {
+  const { force = false } = options;
+  const cacheKey = String(limit);
+  const cached = activeNewsCache.get(cacheKey);
+  const isFresh = cached && Date.now() - cached.timestamp < ACTIVE_NEWS_CACHE_TTL_MS;
+
+  if (!force && isFresh) {
+    return Promise.resolve(cached.data);
+  }
+
+  if (!force && activeNewsInFlight.has(cacheKey)) {
+    return activeNewsInFlight.get(cacheKey);
+  }
+
+  const requestPromise = request(`/news?limit=${limit}`)
+    .then((data) => {
+      activeNewsCache.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+      });
+      return data;
+    })
+    .finally(() => {
+      activeNewsInFlight.delete(cacheKey);
+    });
+
+  activeNewsInFlight.set(cacheKey, requestPromise);
+  return requestPromise;
+};
+
+export const preloadActiveNews = (limit = 1) => {
+  fetchActiveNews(limit).catch(() => null);
+};
+
 export const fetchNewsBySlug = (slug) => request(`/news/post/${slug}`);
 export const fetchAllNews = () => request('/news/admin/all');
 export const createNews = (data) => request('/news', { method: 'POST', body: JSON.stringify(data) });
