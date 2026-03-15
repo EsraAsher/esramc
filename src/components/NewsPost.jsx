@@ -3,7 +3,7 @@ import { Eye, MessageSquare } from 'lucide-react';
 import { getRenderedContent } from '../utils/newsUtils';
 
 const NewsPost = ({ news, isPreview = true }) => {
-  const { title, titleColor, author, createdAt, slug, views, commentsCount } = news;
+  const { title, titleColor, titleSize, author, createdAt, slug, views, commentsCount } = news;
 
   const formattedDate = new Date(createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -22,7 +22,10 @@ const NewsPost = ({ news, isPreview = true }) => {
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-2 md:gap-4 mb-3">
           <h2
             className={`font-pixel text-white mb-0 ${isPreview ? 'text-lg md:text-xl' : 'text-2xl md:text-3xl'}`}
-            style={titleColor ? { color: titleColor } : undefined}
+            style={{
+              ...(titleColor ? { color: titleColor } : {}),
+              ...(titleSize ? { fontSize: `${titleSize}px`, lineHeight: 1.2 } : {}),
+            }}
           >
             {title}
           </h2>

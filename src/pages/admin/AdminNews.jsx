@@ -178,6 +178,7 @@ const AdminNews = () => {
   const [formData, setFormData] = useState({
     title: '',
     titleColor: '#ffffff',
+    titleSize: 34,
     image: '',
     author: '',
     isActive: true,
@@ -277,6 +278,7 @@ const AdminNews = () => {
     const payload = {
       title: formData.title,
       titleColor: formData.titleColor,
+      titleSize: formData.titleSize,
       content: htmlContent,
       contentType: 'html',
       image: formData.image,
@@ -306,6 +308,7 @@ const AdminNews = () => {
     setFormData({
       title: newsItem.title,
       titleColor: newsItem.titleColor || '#ffffff',
+      titleSize: newsItem.titleSize || 34,
       image: newsItem.image || '',
       author: newsItem.author || '',
       isActive: newsItem.isActive,
@@ -328,7 +331,7 @@ const AdminNews = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', titleColor: '#ffffff', image: '', author: '', isActive: true });
+    setFormData({ title: '', titleColor: '#ffffff', titleSize: 34, image: '', author: '', isActive: true });
     setSelectedNews(null);
     setShowForm(false);
     editor?.commands.setContent('', false);
@@ -412,6 +415,29 @@ const AdminNews = () => {
                     pattern="^#(?:[0-9a-fA-F]{3}){1,2}$"
                     title="Hex color format, e.g. #ffffff"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-400 text-xs mb-1 font-pixel">Title Text Size</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="16"
+                    max="72"
+                    value={formData.titleSize}
+                    onChange={(e) => setFormData({ ...formData, titleSize: Number(e.target.value) })}
+                    className="w-full accent-sky-blue"
+                  />
+                  <input
+                    type="number"
+                    min="16"
+                    max="72"
+                    value={formData.titleSize}
+                    onChange={(e) => setFormData({ ...formData, titleSize: Number(e.target.value) || 34 })}
+                    className="w-22 bg-dark-bg border border-white/10 rounded-lg p-2 text-white focus:border-sky-blue outline-none transition-colors text-sm"
+                  />
+                  <span className="text-xs text-gray-400">px</span>
                 </div>
               </div>
 
@@ -530,7 +556,10 @@ const AdminNews = () => {
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3
                     className="font-bold text-white text-lg truncate mr-2"
-                    style={item.titleColor ? { color: item.titleColor } : undefined}
+                    style={{
+                      ...(item.titleColor ? { color: item.titleColor } : {}),
+                      ...(item.titleSize ? { fontSize: `${Math.min(30, item.titleSize)}px` } : {}),
+                    }}
                   >
                     {item.title}
                   </h3>

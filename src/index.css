@@ -253,14 +253,13 @@ body::after {
 
 /* Inline colors from editor content are preserved via element style attributes */
 
-/* ─── Homepage Preview Clamp (keep height consistent) */
+/* ─── Homepage Preview (show more content, protect very long posts) */
 .news-preview {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  -webkit-line-clamp: 6;
-  min-height: 80px;
-  max-height: 150px;
+  display: block;
+  overflow-y: auto;
+  min-height: 220px;
+  max-height: min(70vh, 560px);
+  padding-right: 0.35rem;
 }
 
 

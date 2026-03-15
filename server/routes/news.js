@@ -80,6 +80,12 @@ const normalizeTitleColor = (value) => {
   return HEX_COLOR_REGEX.test(normalized) ? normalized.toLowerCase() : '#ffffff';
 };
 
+const normalizeTitleSize = (value) => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 34;
+  return Math.min(72, Math.max(16, parsed));
+};
+
 // ─── JSON Content Helpers ────────────────────────────────
 const ALLOWED_BLOCK_TYPES = new Set(['h1', 'h2', 'h3', 'p', 'ul', 'ol']);
 
@@ -156,7 +162,7 @@ router.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 0; // 0 = all
     const query = News.find({ isActive: true })
-      .select('title titleColor slug summary content contentType image author createdAt isActive')
+      .select('title titleColor titleSize slug summary content contentType image author createdAt isActive')
       .sort({ createdAt: -1 });
 
     if (limit > 0) {
@@ -209,7 +215,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 
   try {
-    const { title, titleColor, content, contentType, image, author, isActive } = req.body;
+    const { title, titleColor, titleSize, content, contentType, image, author, isActive } = req.body;
     
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
@@ -253,6 +259,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const news = new News({
       title: title.trim(),
       titleColor: normalizeTitleColor(titleColor),
+      titleSize: normalizeTitleSize(titleSize),
       slug,
       summary,
       content: finalContent,
@@ -281,7 +288,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { title, titleColor, content, contentType, image, author, isActive } = req.body;
+    const { title, titleColor, titleSize, content, contentType, image, author, isActive } = req.body;
 
     if (!title || !content || !author) {
       return res.status(400).json({ message: 'Title, content, and author are required' });
@@ -319,6 +326,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     news.title = title.trim();
     news.titleColor = normalizeTitleColor(titleColor);
+    news.titleSize = normalizeTitleSize(titleSize);
     // Only update slug if not set, otherwise keep it
     if (!news.slug) news.slug = generateSlug(title.trim());
     

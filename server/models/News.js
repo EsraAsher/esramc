@@ -13,6 +13,12 @@ const newsSchema = new mongoose.Schema({
     default: '#ffffff',
     match: /^#(?:[0-9a-fA-F]{3}){1,2}$/,
   },
+  titleSize: {
+    type: Number,
+    default: 34,
+    min: 16,
+    max: 72,
+  },
   slug: {
     type: String,
     required: true,
